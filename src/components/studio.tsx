@@ -22,7 +22,6 @@ export type DraftItem = {
   legacy: boolean;
 };
 
-type Stats = { total: number; last7: number; last30: number; perDay: { date: string; count: number }[]; top: { path: string; count: number }[] } | null;
 type Draft = { title: string; slug: string; excerpt: string; seoDescription: string; content: string; categories: string[]; instagram: string };
 type Photo = { url: string; name: string; type: string };
 type DocumentType = 'post' | 'page';
@@ -32,11 +31,9 @@ const emptyDraft: Draft = { title: '', slug: '', excerpt: '', seoDescription: ''
 const AI_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_PHOTOS = 12;
 
-export function Studio({ authenticated, drafts, stats, statsConfigured, totals, config }: {
+export function Studio({ authenticated, drafts, totals, config }: {
   authenticated: boolean;
   drafts: DraftItem[];
-  stats: Stats;
-  statsConfigured: boolean;
   totals: { published: number; drafts: number };
   config: { ai: boolean; blob: boolean; youtube: boolean };
 }) {
@@ -266,7 +263,6 @@ export function Studio({ authenticated, drafts, stats, statsConfigured, totals, 
     );
   }
 
-  const maxDay = Math.max(1, ...(stats?.perDay.map((day) => day.count) ?? [1]));
   const missing = [!config.blob && 'magazyn Vercel Blob', !config.ai && 'klucz ANTHROPIC_API_KEY'].filter(Boolean);
 
   return (
@@ -291,23 +287,12 @@ export function Studio({ authenticated, drafts, stats, statsConfigured, totals, 
             <section className="studio-cards" aria-label="Statystyki">
               <div><span>Opublikowane wpisy</span><strong>{totals.published}</strong></div>
               <div><span>Drafty do dokończenia</span><strong>{totals.drafts}</strong></div>
-              <div><span>Odwiedziny 7 dni</span><strong>{stats ? stats.last7 : '—'}</strong></div>
-              <div><span>Odwiedziny 30 dni</span><strong>{stats ? stats.last30 : '—'}</strong></div>
             </section>
 
             <section className="studio-panel" aria-labelledby="visits-title">
               <h2 id="visits-title">Odwiedziny bloga</h2>
-              {stats ? (
-                <>
-                  <div className="visit-chart" role="img" aria-label={`Odwiedziny z ostatnich 30 dni, razem ${stats.last30}`}>
-                    {stats.perDay.map((day) => <i key={day.date} title={`${day.date}: ${day.count}`} style={{ height: `${Math.max(3, (day.count / maxDay) * 100)}%` }} />)}
-                  </div>
-                  <p className="studio-hint">Wszystkich odsłon od początku liczenia: {stats.total}. Nie liczymy botów ani Twoich wejść po zalogowaniu.</p>
-                  {stats.top.length > 0 && <ol className="top-pages">{stats.top.map((page) => <li key={page.path}><Link href={page.path}>{page.path === '/' ? 'Strona główna' : page.path}</Link><span>{page.count}</span></li>)}</ol>}
-                </>
-              ) : (
-                <p className="studio-hint">{statsConfigured ? 'Nie udało się odczytać statystyk.' : 'Żeby zobaczyć tu statystyki: w Vercel wejdź w Storage → Create → Upstash Redis i podłącz do projektu, potem zrób redeploy. Licznik ruszy sam. Dodatkowo włącz Analytics w zakładce Analytics projektu Vercel, żeby mieć szczegóły (kraje, urządzenia).'}</p>
-              )}
+              <p className="studio-hint">Statystyki (odwiedziny, najczęściej czytane wpisy, kraje, urządzenia, skąd przychodzą czytelnicy) są w Vercel Analytics. Włącz je raz w projekcie: zakładka Analytics → Enable. Dane pojawią się po pierwszych wizytach.</p>
+              <a className="studio-secondary" href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer"><BarChart3 size={15} /> Otwórz Vercel → Analytics</a>
             </section>
 
             <section className="studio-panel" aria-labelledby="drafts-title">

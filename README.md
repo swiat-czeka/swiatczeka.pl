@@ -16,7 +16,7 @@ Eksport można przetworzyć ponownie poleceniem `npm run import:wordpress`. Impo
 ## Wdrożenie Vercel
 
 1. Zaimportuj repozytorium `swiat-czeka/swiatczeka.pl` do Vercel (Next.js, ustawienia domyślne).
-2. W Storage dodaj **Blob** (daje `BLOB_READ_WRITE_TOKEN`) oraz opcjonalnie **Upstash Redis** (statystyki odwiedzin w panelu).
+2. W Storage dodaj **Blob** (daje `BLOB_READ_WRITE_TOKEN`) (statystyki odwiedzin: włącz Analytics w projekcie).
 3. W Settings → Environment Variables dodaj `ANTHROPIC_API_KEY`. Opcjonalnie `YOUTUBE_CHANNEL_ID` i `CRON_SECRET` (wpisy z YouTube), `SESSION_SECRET`.
 4. Zrób redeploy, a domenę `swiatczeka.pl` podepnij na samym końcu.
 
