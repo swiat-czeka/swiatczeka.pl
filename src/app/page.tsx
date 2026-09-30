@@ -1,20 +1,27 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import { ArchiveBrowser } from '@/components/archive-browser';
+import { SmartImage } from '@/components/smart-image';
+import { WorldMap } from '@/components/world-map';
+import { countryCategories } from '@/lib/countries';
+import { imageSources } from '@/lib/legacy';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { getArchivePage, getPopularCategories, getPosts } from '@/lib/posts';
+import { getArchivePage, getCategoryCounts, getPopularCategories, getPosts } from '@/lib/posts';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [posts, archive, categories] = await Promise.all([
+  const [posts, archive, categories, categoryCounts] = await Promise.all([
     getPosts(),
     getArchivePage('', '', 0, 12),
     getPopularCategories(),
+    getCategoryCounts(),
   ]);
-  const featured = posts[0];
+  const featured = posts.find((post) => post.image) ?? posts[0];
+  const featuredImage = featured ? imageSources(featured) : undefined;
+  const slugCounts = new Map([...categoryCounts].map(([slug, category]) => [slug, category.count]));
+  const countries = Object.values(countryCategories).filter((country) => (slugCounts.get(country.slug) ?? 0) > 0).length;
   const places = categories.filter((category) => !['azja', 'afryka', 'ameryka-poludniowa', 'ameryka-polnocna', 'europa', 'fotki', 'filmy', 'dokad-teraz'].includes(category.slug)).slice(0, 6);
 
   return (
@@ -22,7 +29,7 @@ export default async function HomePage() {
       <SiteHeader />
       <main id="top">
         <section className="hero" aria-labelledby="hero-title">
-          {featured?.image && <Image className="hero-image" src={featured.image} alt={featured.imageAlt || featured.title} fill priority sizes="100vw" />}
+          {featuredImage?.src && <SmartImage className="hero-image" src={featuredImage.src} fallback={featuredImage.fallback} alt={featured.imageAlt || featured.title} fill priority quality={85} sizes="100vw" />}
           <div className="hero-shade" />
           <div className="hero-inner">
             <div className="hero-kicker"><span className="kicker-dot" /> Dziennik podróży · od 2005</div>
@@ -40,12 +47,26 @@ export default async function HomePage() {
           <div className="place-list">{places.map((place, index) => <Link key={place.slug} href={`/kategoria/${place.slug}`}><span>0{index + 1}</span>{place.name}<ArrowUpRight size={15} /></Link>)}</div>
         </section>
 
+        <section className="about-section" id="o-blogu" aria-labelledby="about-title">
+          <span className="section-label">O tym blogu</span>
+          <div>
+            <h2 id="about-title">Prywatny dziennik <em>z drogi.</em></h2>
+            <p>Świat Czeka to blog podróżniczy Anki i przyjaciół. Od 2005 roku zapisujemy tu prawdziwe historie z wypraw: {posts.length.toLocaleString('pl-PL')} opowieści z {countries} krajów, od Azji po Amerykę Południową. Bez wielkich planów i katalogowych zdjęć, za to z drogą, ludźmi i jedzeniem, które zapamiętaliśmy.</p>
+            <p>Szukasz konkretnego kraju? Kliknij go na mapie poniżej albo przejrzyj archiwum, posortuj je po dacie i wybierz miejsce.</p>
+          </div>
+        </section>
+
+        <section className="map-section" id="mapa" aria-labelledby="map-title">
+          <div className="section-heading"><div><span className="section-label">Zdrapka świata</span><h2 id="map-title">Gdzie już <em>byliśmy.</em></h2></div><Link className="text-link" href="/mapa">Otwórz mapę <span aria-hidden="true">↗</span></Link></div>
+          <WorldMap counts={slugCounts} />
+        </section>
+
         <section className="stories-section" id="historie">
           <div className="section-heading"><div><span className="section-label">Z drogi, z serca</span><h2>Historie, które <em>zostają.</em></h2></div><span className="archive-total">{posts.length.toLocaleString('pl-PL')} opowieści</span></div>
           <ArchiveBrowser initialPosts={archive.posts} categories={categories.slice(0, 8)} total={archive.total} />
         </section>
 
-        <section className="closing-note"><span className="closing-star">✳</span><p>Najlepszy plan podróży?<br /><em>Ten, który jeszcze może się zmienić.</em></p><span className="closing-signature">Anka & przyjaciele</span></section>
+        <section className="closing-note"><Link className="closing-star" href="/studio" aria-label="Panel administratora">✳</Link><p>Najlepszy plan podróży?<br /><em>Ten, który jeszcze może się zmienić.</em></p><span className="closing-signature">Anka & przyjaciele</span></section>
       </main>
       <SiteFooter />
     </>

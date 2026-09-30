@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { SmartImage } from '@/components/smart-image';
 import type { PostPreview } from '@/lib/types';
 
 export function PostCard({ post, index = 0 }: { post: PostPreview; index?: number }) {
@@ -7,7 +7,7 @@ export function PostCard({ post, index = 0 }: { post: PostPreview; index?: numbe
   return (
     <article className="post-card" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}>
       <Link className="post-card-image" href={`/wpis/${post.slug}`} aria-label={`Czytaj: ${post.title}`}>
-        {post.image ? <Image src={post.image} alt={post.imageAlt || post.title} fill sizes="(max-width: 620px) 88vw, (max-width: 900px) 42vw, 25vw" /> : <div className="image-placeholder">świat czeka</div>}
+        {post.image ? <SmartImage src={post.image} fallback={post.imageFallback} alt={post.imageAlt || post.title} fill quality={80} sizes="(max-width: 620px) 92vw, (max-width: 1100px) 46vw, 30vw" /> : <div className="image-placeholder">świat czeka</div>}
         {region && <span className="image-location">{region.name}</span>}
       </Link>
       <div className="post-card-copy">

@@ -32,7 +32,7 @@ export default async function LandingPage({ params }: Props) {
           {page.excerpt && <p>{page.excerpt}</p>}
           {page.image && <a className="landing-scroll" href="#opowiesc">Poznaj opowieść <ArrowDown size={15} /></a>}
         </header>
-        {page.image && <figure className="landing-cover"><Image src={page.image} alt={page.imageAlt || page.title} fill priority sizes="100vw" /></figure>}
+        {page.image && <figure className="landing-cover"><Image src={page.image} quality={85} alt={page.imageAlt || page.title} fill priority sizes="100vw" /></figure>}
         <article className="landing-content" id="opowiesc">
           {page.content.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => paragraph.startsWith('## ') ? <h2 key={index}>{paragraph.slice(3)}</h2> : <p key={index}>{paragraph}</p>)}
           {page.gallery && page.gallery.length > 1 && <div className="story-gallery">{page.gallery.slice(1).map((image, index) => <Image key={image} src={image} alt={`${page.title}, zdjęcie ${index + 2}`} width={800} height={560} sizes="(max-width: 620px) 88vw, 70vw" loading="lazy" />)}</div>}

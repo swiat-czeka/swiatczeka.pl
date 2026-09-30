@@ -1,78 +1,124 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { upload } from '@vercel/blob/client';
-import { ArrowLeft, ArrowUpRight, Check, ImagePlus, LoaderCircle, LogOut, Mic, MicOff, PenLine, Send, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
+import { upload } from '@vercel/blob/client';
+import { ArrowLeft, ArrowUpRight, BarChart3, Check, Clipboard, FileText, ImagePlus, LoaderCircle, LogOut, Mic, MicOff, PenLine, RefreshCw, Save, Send, Sparkles, X } from 'lucide-react';
+import { slugify } from '@/lib/legacy';
 
-type Draft = { title: string; excerpt: string; content: string; categories: string[] };
+export type DraftItem = {
+  id: string;
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  content: string;
+  categories: string[];
+  image: string;
+  instagram: string;
+  seoDescription: string;
+  gallery: string[];
+  legacy: boolean;
+};
+
+type Stats = { total: number; last7: number; last30: number; perDay: { date: string; count: number }[]; top: { path: string; count: number }[] } | null;
+type Draft = { title: string; slug: string; excerpt: string; seoDescription: string; content: string; categories: string[]; instagram: string };
 type Photo = { url: string; name: string; type: string };
 type DocumentType = 'post' | 'page';
+type Editing = { id?: string; date?: string; slug: string; legacy?: boolean } | null;
 
-function slugify(value: string) {
-  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
+const emptyDraft: Draft = { title: '', slug: '', excerpt: '', seoDescription: '', content: '', categories: [], instagram: '' };
+const AI_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_PHOTOS = 12;
 
-export function Studio({ authenticated }: { authenticated: boolean }) {
+export function Studio({ authenticated, drafts, stats, statsConfigured, totals, config }: {
+  authenticated: boolean;
+  drafts: DraftItem[];
+  stats: Stats;
+  statsConfigured: boolean;
+  totals: { published: number; drafts: number };
+  config: { openai: boolean; blob: boolean; youtube: boolean };
+}) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [tab, setTab] = useState<'overview' | 'new'>('overview');
   const [transcript, setTranscript] = useState('');
-  const [draft, setDraft] = useState<Draft>({ title: '', excerpt: '', content: '', categories: [] });
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const [slugTouched, setSlugTouched] = useState(false);
   const [documentType, setDocumentType] = useState<DocumentType>('post');
-  const [publishedType, setPublishedType] = useState<DocumentType>('post');
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [editing, setEditing] = useState<Editing>(null);
   const [listening, setListening] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [published, setPublished] = useState('');
+  const [notice, setNotice] = useState('');
+  const [saved, setSaved] = useState<{ slug: string; status: 'draft' | 'published'; type: DocumentType } | null>(null);
+  const [copied, setCopied] = useState(false);
   const recognition = useRef<SpeechRecognitionLike | null>(null);
+  const wantListening = useRef(false);
+
+  useEffect(() => () => { wantListening.current = false; recognition.current?.stop(); }, []);
 
   async function login(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError('');
-    const response = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+    const response = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
     if (response.ok) window.location.reload();
-    else setError((await response.json()).error ?? 'Nie udało się zalogować.');
+    else setError((await response.json().catch(() => ({}))).error ?? 'Nie udało się zalogować.');
     setBusy(false);
   }
 
-  function toggleRecording() {
-    if (listening) {
-      recognition.current?.stop();
-      setListening(false);
-      return;
-    }
+  function startRecognition() {
     const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition;
     if (!Recognition) {
-      setError('Ta przeglądarka nie obsługuje dyktowania. Możesz wpisać opowieść poniżej.');
-      return;
+      setError('Ta przeglądarka nie obsługuje dyktowania. Użyj Chrome/Safari albo wpisz tekst poniżej.');
+      return false;
     }
     const instance = new Recognition();
     instance.lang = 'pl-PL';
     instance.continuous = true;
     instance.interimResults = false;
     instance.onresult = (event) => {
-      const words = Array.from(event.results).slice(event.resultIndex).map((result) => result[0].transcript).join(' ');
-      setTranscript((current) => current ? `${current.trim()} ${words}` : words);
+      const words = Array.from(event.results).slice(event.resultIndex).map((result) => result[0].transcript.trim()).join(' ');
+      setTranscript((current) => (current ? `${current.trim()} ${words}` : words));
     };
-    instance.onerror = () => {
+    instance.onerror = (event: { error?: string }) => {
+      if (event.error === 'no-speech' || event.error === 'aborted') return;
+      wantListening.current = false;
       setListening(false);
       setError('Nie udało się uruchomić mikrofonu. Sprawdź uprawnienia przeglądarki.');
     };
-    instance.onend = () => setListening(false);
+    // Przeglądarki same kończą długie nagrania — jeśli użytkownik nie zatrzymał, wznawiamy.
+    instance.onend = () => {
+      if (wantListening.current) {
+        try { startRecognition(); } catch { setListening(false); }
+      } else setListening(false);
+    };
     recognition.current = instance;
-    setError('');
-    setListening(true);
     instance.start();
+    return true;
+  }
+
+  function toggleRecording() {
+    if (listening) {
+      wantListening.current = false;
+      recognition.current?.stop();
+      setListening(false);
+      return;
+    }
+    setError('');
+    wantListening.current = true;
+    if (startRecognition()) setListening(true);
+    else wantListening.current = false;
   }
 
   async function addPhotos(files: FileList | null) {
     if (!files?.length) return;
-    const remaining = Math.max(0, 6 - photos.length);
-    const selection = Array.from(files).slice(0, remaining);
+    const selection = Array.from(files).slice(0, Math.max(0, MAX_PHOTOS - photos.length));
     if (!selection.length) {
-      setError('Do wpisu można dodać maksymalnie 6 zdjęć.');
+      setError(`Do wpisu można dodać maksymalnie ${MAX_PHOTOS} zdjęć.`);
       return;
     }
     setBusy(true);
@@ -83,7 +129,7 @@ export function Studio({ authenticated }: { authenticated: boolean }) {
         const blob = await upload(file.name, file, { access: 'public', handleUploadUrl: '/api/upload' });
         return { url: blob.url, name: file.name, type: file.type };
       }));
-      setPhotos((current) => [...current, ...uploaded].slice(0, 6));
+      setPhotos((current) => [...current, ...uploaded].slice(0, MAX_PHOTOS));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Nie udało się przesłać zdjęć.');
     } finally {
@@ -98,12 +144,21 @@ export function Studio({ authenticated }: { authenticated: boolean }) {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript, images: photos.filter((photo) => ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(photo.type)).map((photo) => photo.url), type: documentType }),
+        body: JSON.stringify({ transcript, images: photos.filter((photo) => AI_IMAGE_TYPES.includes(photo.type)).map((photo) => photo.url), type: documentType }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? 'Nie udało się przygotować szkicu.');
-      setDraft({ title: result.title, excerpt: result.excerpt, content: result.content, categories: result.categories ?? [] });
-      setPublished('');
+      setDraft({
+        title: result.title ?? '',
+        slug: result.slug ?? slugify(result.title ?? ''),
+        excerpt: result.excerpt ?? '',
+        seoDescription: result.seoDescription ?? '',
+        content: result.content ?? '',
+        categories: Array.isArray(result.categories) ? result.categories : [],
+        instagram: result.instagram ?? '',
+      });
+      setSlugTouched(false);
+      setSaved(null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Nie udało się przygotować szkicu.');
     } finally {
@@ -111,25 +166,81 @@ export function Studio({ authenticated }: { authenticated: boolean }) {
     }
   }
 
-  async function publish(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function save(status: 'draft' | 'published') {
     setBusy(true);
     setError('');
+    setNotice('');
     try {
+      const existing = saved ? { slug: saved.slug } : editing;
       const response = await fetch(documentType === 'page' ? '/api/pages' : '/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...draft, slug: `${slugify(draft.title)}-${Date.now().toString(36)}`, categories: draft.categories, gallery: photos.map((photo) => photo.url) }),
+        body: JSON.stringify({
+          ...draft,
+          slug: existing?.slug ?? (draft.slug || slugify(draft.title)),
+          id: editing?.id,
+          date: editing?.date,
+          overwrite: Boolean(existing),
+          status: documentType === 'page' ? 'published' : status,
+          gallery: photos.map((photo) => photo.url),
+          image: photos[0]?.url,
+        }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'Nie udało się opublikować wpisu.');
-      setPublished(result.slug);
-      setPublishedType(documentType);
+      if (!response.ok) throw new Error(result.error ?? 'Nie udało się zapisać wpisu.');
+      setSaved({ slug: result.slug, status: result.status, type: documentType });
+      setNotice(status === 'draft' ? 'Szkic zapisany.' : 'Opublikowano.');
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Nie udało się opublikować wpisu.');
+      setError(cause instanceof Error ? cause.message : 'Nie udało się zapisać wpisu.');
     } finally {
       setBusy(false);
     }
+  }
+
+  function openDraft(item: DraftItem) {
+    setDocumentType('post');
+    setDraft({ title: item.title, slug: item.slug, excerpt: item.excerpt, seoDescription: item.seoDescription, content: item.content, categories: item.categories, instagram: item.instagram });
+    setTranscript('');
+    const urls = item.gallery.length ? item.gallery : item.image ? [item.image] : [];
+    setPhotos(urls.map((url) => ({ url, name: item.title, type: 'image/jpeg' })));
+    setEditing({ id: item.id, date: item.date, slug: item.slug, legacy: item.legacy });
+    setSlugTouched(true);
+    setSaved(null);
+    setNotice('');
+    setTab('new');
+  }
+
+  function newPost() {
+    setDraft(emptyDraft);
+    setTranscript('');
+    setPhotos([]);
+    setEditing(null);
+    setSaved(null);
+    setSlugTouched(false);
+    setNotice('');
+    setTab('new');
+  }
+
+  async function syncYoutube() {
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const response = await fetch('/api/cron/youtube', { method: 'POST' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? 'Synchronizacja nie powiodła się.');
+      setNotice(result.added?.length ? `Dodano ${result.added.length} nowych filmów z YouTube.` : 'Brak nowych filmów na kanale.');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Synchronizacja nie powiodła się.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copyInstagram() {
+    await navigator.clipboard.writeText(draft.instagram).catch(() => undefined);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   }
 
   async function logout() {
@@ -141,53 +252,135 @@ export function Studio({ authenticated }: { authenticated: boolean }) {
     return (
       <main className="studio-login">
         <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.jpg" width={2560} height={887} alt="Świat Czeka" /></Link>
-        <div className="login-panel"><span className="section-label">Prywatne studio</span><h1>Witaj <em>w domu.</em></h1><p>To miejsce jest tylko dla Ciebie.</p>
-          <form onSubmit={login}><label htmlFor="password">Hasło</label><input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /><button className="studio-primary" disabled={busy}>{busy ? <LoaderCircle className="spin" size={17} /> : null} Wejdź do studia <ArrowUpRight size={17} /></button></form>
+        <div className="login-panel"><span className="section-label">Panel administratora</span><h1>Witaj <em>w domu.</em></h1><p>To miejsce jest tylko dla autorki bloga.</p>
+          <form onSubmit={login}>
+            <label htmlFor="email">E-mail</label><input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="username" required />
+            <label htmlFor="password">Hasło</label><input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required />
+            <button className="studio-primary" disabled={busy}>{busy ? <LoaderCircle className="spin" size={17} /> : null} Zaloguj się <ArrowUpRight size={17} /></button>
+          </form>
           {error && <p className="form-error" role="alert">{error}</p>}
           <Link className="login-back" href="/">← wróć do bloga</Link>
         </div>
-        <span className="login-note">Tylko dla Anki · światczeka.pl</span>
+        <span className="login-note">Świat Czeka · panel administratora</span>
       </main>
     );
   }
 
+  const maxDay = Math.max(1, ...(stats?.perDay.map((day) => day.count) ?? [1]));
+  const missing = [!config.blob && 'magazyn Vercel Blob', !config.openai && 'klucz OPENAI_API_KEY'].filter(Boolean);
+
   return (
     <main className="studio-shell">
-      <header className="studio-header"><Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.jpg" width={2560} height={887} alt="Świat Czeka" /></Link><div><span className="studio-status"><span /> Prywatne studio</span><button className="icon-button" onClick={logout} title="Wyloguj" aria-label="Wyloguj"><LogOut size={17} /></button></div></header>
-      <div className="studio-main">
-        <div className="studio-heading"><div><Link className="studio-back" href="/"><ArrowLeft size={15} /> Blog</Link><h1>Nowa <em>opowieść.</em></h1><p>Powiedz, co wydarzyło się po drodze. Resztę ułożymy razem.</p></div><span className="studio-date">{new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}</span></div>
-        <div className="studio-mode" role="group" aria-label="Rodzaj publikacji">
-          <span>Tworzysz:</span>
-          <button className={documentType === 'post' ? 'mode-active' : ''} aria-pressed={documentType === 'post'} onClick={() => { setDocumentType('post'); setPublished(''); }}>Wpis na blogu</button>
-          <button className={documentType === 'page' ? 'mode-active' : ''} aria-pressed={documentType === 'page'} onClick={() => { setDocumentType('page'); setPublished(''); }}>Landing page</button>
-        </div>
-        <div className="studio-workspace">
-          <section className="capture-column" aria-label="Nagranie i zdjęcia">
-            <div className="studio-block-title"><span>01</span><div><h2>Twoja historia</h2><p>Opowiedz tak, jak pamiętasz.</p></div></div>
-            <button className={`record-button${listening ? ' is-listening' : ''}`} onClick={toggleRecording}><span className="record-icon">{listening ? <MicOff size={22} /> : <Mic size={22} />}</span><span><strong>{listening ? 'Zatrzymaj nagrywanie' : 'Nagraj głos'}</strong><small>{listening ? 'Słucham…' : 'Mów swobodnie, po polsku'}</small></span><span className="record-wave" aria-hidden="true"><i /><i /><i /><i /><i /></span></button>
-            <label className="field-label" htmlFor="transcript">Notatka lub transkrypcja</label><textarea id="transcript" className="transcript-input" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder="Zacznij od tego, gdzie jesteś i co dziś zapamiętasz…" />
-            <div className="photos-heading"><div><span className="studio-step">02</span><strong>Zdjęcia z drogi</strong><span className="photo-count">{photos.length}/6</span></div><label className="photo-add" htmlFor="photos"><ImagePlus size={16} /> Dodaj zdjęcia<input id="photos" type="file" accept="image/*" multiple onChange={(event) => { void addPhotos(event.target.files); event.target.value = ''; }} /></label></div>
-            {photos.length > 0 && <div className="studio-photos">{photos.map((photo) => <figure key={photo.url}><Image src={photo.url} alt={photo.name} fill sizes="(max-width: 620px) 20vw, 10vw" /><button type="button" onClick={() => setPhotos((current) => current.filter((item) => item.url !== photo.url))} aria-label={`Usuń ${photo.name}`}><X size={14} /></button></figure>)}</div>}
-            {photos.some((photo) => !['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(photo.type)) && <p className="photo-format-note">Zdjęcia HEIC opublikują się normalnie; do analizy AI dołącz JPG, PNG lub WebP.</p>}
-            <button className="studio-generate" onClick={makeDraft} disabled={busy || transcript.trim().length < 8}><Sparkles size={17} /> {documentType === 'page' ? 'Stwórz landing page' : 'Ułóż szkic z AI'} <ArrowUpRight size={16} /></button>
-          </section>
+      <header className="studio-header">
+        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.jpg" width={2560} height={887} alt="Świat Czeka" /></Link>
+        <nav className="studio-tabs" aria-label="Panel">
+          <button className={tab === 'overview' ? 'tab-active' : ''} onClick={() => setTab('overview')}><BarChart3 size={16} /> Przegląd</button>
+          <button className={tab === 'new' ? 'tab-active' : ''} onClick={() => (tab === 'new' ? undefined : newPost())}><Mic size={16} /> Nowy wpis</button>
+        </nav>
+        <button className="icon-button" onClick={logout} title="Wyloguj" aria-label="Wyloguj"><LogOut size={17} /></button>
+      </header>
 
-          <section className="draft-column" aria-label="Edytor wpisu">
-            <div className="studio-block-title"><span>03</span><div><h2>Twój wpis</h2><p>Przejrzyj, popraw, opublikuj.</p></div></div>
-            <form className="draft-form" onSubmit={publish}>
-              <label className="field-label" htmlFor="draft-title">Tytuł</label><input id="draft-title" className="draft-title" value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} placeholder="Nadaj tej chwili tytuł" required />
-              <label className="field-label" htmlFor="draft-excerpt">Krótki wstęp</label><textarea id="draft-excerpt" className="draft-excerpt" value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} placeholder="Jedno zdanie, które wciągnie w opowieść" />
-              <label className="field-label" htmlFor="draft-content">Treść</label><textarea id="draft-content" className="draft-content" value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder="Tu pojawi się Twoja opowieść. Możesz ją dowolnie poprawić." required />
-              <label className="field-label" htmlFor="draft-categories">Miejsce lub temat <span>oddziel przecinkiem</span></label><input id="draft-categories" className="draft-categories" value={draft.categories.join(', ')} onChange={(event) => setDraft({ ...draft, categories: event.target.value.split(',').map((value) => value.trim()).filter(Boolean) })} placeholder="Laos, ludzie, jedzenie" />
-              <div className="publish-row"><span><PenLine size={15} /> {documentType === 'page' ? 'Strona otrzyma własny adres URL' : 'Wpis pojawi się od razu na blogu'}</span><button className="studio-primary" disabled={busy || !draft.title.trim() || !draft.content.trim()}>{busy ? <LoaderCircle className="spin" size={17} /> : published ? <Check size={17} /> : <Send size={16} />}{published ? 'Opublikowano' : documentType === 'page' ? 'Opublikuj stronę' : 'Opublikuj wpis'}</button></div>
-            </form>
-            {published && <Link className="published-link" href={publishedType === 'page' ? `/strona/${published}` : `/wpis/${published}`}>Zobacz opublikowaną {publishedType === 'page' ? 'stronę' : 'historię'} <ArrowUpRight size={15} /></Link>}
-          </section>
-        </div>
+      <div className="studio-main">
+        {missing.length > 0 && <p className="studio-warning" role="status">Do pełnego działania brakuje w Vercel: {missing.join(', ')}.</p>}
+
+        {tab === 'overview' && (
+          <>
+            <div className="studio-heading"><div><Link className="studio-back" href="/"><ArrowLeft size={15} /> Blog</Link><h1>Cześć, <em>Anka.</em></h1><p>Tu widzisz, co czeka na dokończenie i jak czytają Twój blog.</p></div>
+              <button className="studio-primary" onClick={newPost}><Mic size={17} /> Podyktuj nowy wpis</button></div>
+
+            <section className="studio-cards" aria-label="Statystyki">
+              <div><span>Opublikowane wpisy</span><strong>{totals.published}</strong></div>
+              <div><span>Drafty do dokończenia</span><strong>{totals.drafts}</strong></div>
+              <div><span>Odwiedziny 7 dni</span><strong>{stats ? stats.last7 : '—'}</strong></div>
+              <div><span>Odwiedziny 30 dni</span><strong>{stats ? stats.last30 : '—'}</strong></div>
+            </section>
+
+            <section className="studio-panel" aria-labelledby="visits-title">
+              <h2 id="visits-title">Odwiedziny bloga</h2>
+              {stats ? (
+                <>
+                  <div className="visit-chart" role="img" aria-label={`Odwiedziny z ostatnich 30 dni, razem ${stats.last30}`}>
+                    {stats.perDay.map((day) => <i key={day.date} title={`${day.date}: ${day.count}`} style={{ height: `${Math.max(3, (day.count / maxDay) * 100)}%` }} />)}
+                  </div>
+                  <p className="studio-hint">Wszystkich odsłon od początku liczenia: {stats.total}. Nie liczymy botów ani Twoich wejść po zalogowaniu.</p>
+                  {stats.top.length > 0 && <ol className="top-pages">{stats.top.map((page) => <li key={page.path}><Link href={page.path}>{page.path === '/' ? 'Strona główna' : page.path}</Link><span>{page.count}</span></li>)}</ol>}
+                </>
+              ) : (
+                <p className="studio-hint">{statsConfigured ? 'Nie udało się odczytać statystyk.' : 'Żeby zobaczyć tu statystyki: w Vercel wejdź w Storage → Create → Upstash Redis i podłącz do projektu, potem zrób redeploy. Licznik ruszy sam. Dodatkowo włącz Analytics w zakładce Analytics projektu Vercel, żeby mieć szczegóły (kraje, urządzenia).'}</p>
+              )}
+            </section>
+
+            <section className="studio-panel" aria-labelledby="drafts-title">
+              <h2 id="drafts-title">Drafty do dokończenia <span>{drafts.length}</span></h2>
+              <p className="studio-hint">Wpisy bez treści (np. sam link do albumu Picasa) nie są widoczne na blogu. Otwórz wpis, podyktuj opis albo dopisz tekst, i opublikuj.</p>
+              {drafts.length === 0 ? <p className="studio-hint">Brak draftów. Świetnie!</p> : (
+                <ul className="draft-list">
+                  {drafts.map((item) => (
+                    <li key={item.slug}>
+                      <div><strong>{item.title || item.slug}</strong><span>{new Intl.DateTimeFormat('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(item.date))}{item.categories[0] ? ` · ${item.categories[0]}` : ''}{item.legacy ? ' · stary wpis' : ''}</span></div>
+                      <button className="studio-secondary" onClick={() => openDraft(item)}><FileText size={15} /> Dokończ</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="studio-panel" aria-labelledby="yt-title">
+              <h2 id="yt-title">Vlog z YouTube</h2>
+              <p className="studio-hint">{config.youtube ? 'Nowe filmy z Twojego kanału trafiają na bloga automatycznie raz dziennie (kategoria „Filmy”). Możesz też pobrać je od razu.' : 'Ustaw w Vercel zmienną YOUTUBE_CHANNEL_ID (ID kanału zaczyna się od „UC”, znajdziesz je w YouTube Studio → Ustawienia → Kanał → Zaawansowane) oraz CRON_SECRET (dowolny długi losowy ciąg).'}</p>
+              <button className="studio-secondary" onClick={syncYoutube} disabled={busy || !config.youtube}><RefreshCw size={15} /> Pobierz nowe filmy teraz</button>
+            </section>
+          </>
+        )}
+
+        {tab === 'new' && (
+          <>
+            <div className="studio-heading"><div><button className="studio-back" onClick={() => setTab('overview')}><ArrowLeft size={15} /> Przegląd</button><h1>{editing ? 'Dokończ ' : 'Nowa '}<em>{editing ? 'wpis.' : 'opowieść.'}</em></h1><p>Powiedz, co wydarzyło się po drodze. Poprawimy tylko przecinki i powtórzenia, a Twój sposób mówienia zostaje.</p></div></div>
+            <div className="studio-mode" role="group" aria-label="Rodzaj publikacji">
+              <span>Tworzysz:</span>
+              <button className={documentType === 'post' ? 'mode-active' : ''} aria-pressed={documentType === 'post'} onClick={() => { setDocumentType('post'); setSaved(null); }}>Wpis na blogu</button>
+              <button className={documentType === 'page' ? 'mode-active' : ''} aria-pressed={documentType === 'page'} disabled={Boolean(editing)} onClick={() => { setDocumentType('page'); setSaved(null); }}>Landing page</button>
+            </div>
+            <div className="studio-workspace">
+              <section className="capture-column" aria-label="Nagranie i zdjęcia">
+                <div className="studio-block-title"><span>01</span><div><h2>Twoja historia</h2><p>Nagraj głos albo wpisz tekst.</p></div></div>
+                <button type="button" className={`record-button${listening ? ' is-listening' : ''}`} onClick={toggleRecording}><span className="record-icon">{listening ? <MicOff size={22} /> : <Mic size={22} />}</span><span><strong>{listening ? 'Zatrzymaj nagrywanie' : 'Nagraj głos'}</strong><small>{listening ? 'Słucham… mów swobodnie' : 'Dyktuj po polsku, tak jak opowiadasz'}</small></span><span className="record-wave" aria-hidden="true"><i /><i /><i /><i /><i /></span></button>
+                <label className="field-label" htmlFor="transcript">Notatka lub transkrypcja</label><textarea id="transcript" className="transcript-input" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder="Np. Byliśmy na sylwestrze na Filipinach. Zaczęło się od…" />
+                <div className="photos-heading"><div><span className="studio-step">02</span><strong>Zdjęcia z drogi</strong><span className="photo-count">{photos.length}/{MAX_PHOTOS}</span></div><label className="photo-add" htmlFor="photos"><ImagePlus size={16} /> Dodaj zdjęcia<input id="photos" type="file" accept="image/*" multiple onChange={(event) => { void addPhotos(event.target.files); event.target.value = ''; }} /></label></div>
+                {photos.length > 0 && <div className="studio-photos">{photos.map((photo, index) => <figure key={photo.url}><Image src={photo.url} alt={photo.name} fill sizes="(max-width: 620px) 20vw, 10vw" />{index === 0 && <figcaption>okładka</figcaption>}<button type="button" onClick={() => setPhotos((current) => current.filter((item) => item.url !== photo.url))} aria-label={`Usuń ${photo.name}`}><X size={14} /></button></figure>)}</div>}
+                <p className="photo-format-note">Pierwsze zdjęcie jest okładką. Do analizy AI trafia pierwszych 6 (JPG, PNG lub WebP).</p>
+                <button type="button" className="studio-generate" onClick={makeDraft} disabled={busy || transcript.trim().length < 8}><Sparkles size={17} /> {documentType === 'page' ? 'Stwórz landing page' : 'Wygładź i ułóż wpis'} <ArrowUpRight size={16} /></button>
+              </section>
+
+              <section className="draft-column" aria-label="Edytor wpisu">
+                <div className="studio-block-title"><span>03</span><div><h2>Twój wpis</h2><p>Przejrzyj, popraw, opublikuj.</p></div></div>
+                <form className="draft-form" onSubmit={(event) => { event.preventDefault(); void save('published'); }}>
+                  <label className="field-label" htmlFor="draft-title">Tytuł</label><input id="draft-title" className="draft-title" value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value, slug: slugTouched ? draft.slug : slugify(event.target.value) })} placeholder="Nadaj tej chwili tytuł" required />
+                  <label className="field-label" htmlFor="draft-slug">Adres wpisu <span>swiatczeka.pl/{documentType === 'page' ? 'strona' : 'wpis'}/{draft.slug || '…'}</span></label><input id="draft-slug" className="draft-categories" value={draft.slug} disabled={Boolean(editing || saved)} onChange={(event) => { setSlugTouched(true); setDraft({ ...draft, slug: slugify(event.target.value) }); }} placeholder="sylwester-na-filipinach" />
+                  <label className="field-label" htmlFor="draft-excerpt">Krótki wstęp</label><textarea id="draft-excerpt" className="draft-excerpt" value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} placeholder="Jedno zdanie, które wciągnie w opowieść" />
+                  <label className="field-label" htmlFor="draft-seo">Opis w Google <span>{draft.seoDescription.length}/155</span></label><textarea id="draft-seo" className="draft-excerpt" maxLength={170} value={draft.seoDescription} onChange={(event) => setDraft({ ...draft, seoDescription: event.target.value })} placeholder="Zostanie ustawiony automatycznie z początku tekstu, jeśli zostawisz puste" />
+                  <label className="field-label" htmlFor="draft-content">Treść <span>nagłówki zaczynaj od „## ”</span></label><textarea id="draft-content" className="draft-content" value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder="Tu pojawi się Twoja opowieść. Możesz ją dowolnie poprawić." required />
+                  <label className="field-label" htmlFor="draft-categories">Miejsce lub temat <span>oddziel przecinkiem</span></label><input id="draft-categories" className="draft-categories" value={draft.categories.join(', ')} onChange={(event) => setDraft({ ...draft, categories: event.target.value.split(',').map((value) => value.trim()).filter(Boolean) })} placeholder="Filipiny, ludzie, jedzenie" />
+                  {documentType === 'post' && <><label className="field-label" htmlFor="draft-ig">Wersja na Instagram <span>{draft.instagram.length}/2200</span></label><textarea id="draft-ig" className="draft-excerpt" value={draft.instagram} onChange={(event) => setDraft({ ...draft, instagram: event.target.value })} placeholder="Krótka wersja z hasztagami" />
+                    <button type="button" className="studio-secondary" onClick={copyInstagram} disabled={!draft.instagram}>{copied ? <Check size={15} /> : <Clipboard size={15} />} {copied ? 'Skopiowano' : 'Kopiuj tekst na Instagram'}</button></>}
+                  <div className="publish-row"><span><PenLine size={15} /> {saved ? (saved.status === 'draft' ? 'Zapisano jako szkic' : 'Wpis jest na blogu') : documentType === 'page' ? 'Strona dostanie własny adres URL' : 'Szkic lub publikacja na blogu'}</span>
+                    <div className="publish-actions">
+                      {documentType === 'post' && <button type="button" className="studio-secondary" disabled={busy || !draft.title.trim() || !draft.content.trim()} onClick={() => void save('draft')}><Save size={15} /> Zapisz szkic</button>}
+                      <button className="studio-primary" disabled={busy || !draft.title.trim() || !draft.content.trim()}>{busy ? <LoaderCircle className="spin" size={17} /> : saved?.status === 'published' ? <Check size={17} /> : <Send size={16} />}{saved?.status === 'published' ? 'Opublikowano' : 'Opublikuj'}</button>
+                    </div>
+                  </div>
+                </form>
+                {saved?.status === 'published' && <Link className="published-link" href={saved.type === 'page' ? `/strona/${saved.slug}` : `/wpis/${saved.slug}`}>Zobacz na blogu <ArrowUpRight size={15} /></Link>}
+              </section>
+            </div>
+          </>
+        )}
+
+        {notice && <div className="studio-notice" role="status"><span>{notice}</span><button onClick={() => setNotice('')} aria-label="Zamknij"><X size={16} /></button></div>}
         {error && <div className="studio-error" role="alert"><span>{error}</span><button onClick={() => setError('')} aria-label="Zamknij"><X size={16} /></button></div>}
-        {busy && <span className="studio-busy" aria-live="polite"><LoaderCircle className="spin" size={14} /> Pracuję nad Twoją opowieścią…</span>}
+        {busy && <span className="studio-busy" aria-live="polite"><LoaderCircle className="spin" size={14} /> Pracuję…</span>}
       </div>
-      <footer className="studio-footer"><span>Świat Czeka · Prywatne studio</span><span>Twoje historie, Twój rytm.</span></footer>
+      <footer className="studio-footer"><span>Świat Czeka · panel administratora</span><span>Twoje historie, Twój rytm.</span></footer>
     </main>
   );
 }

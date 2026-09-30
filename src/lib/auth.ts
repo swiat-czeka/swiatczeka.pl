@@ -1,12 +1,25 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
 
 const cookieName = 'swiatczeka_session';
 const sessionDuration = 60 * 60 * 24 * 14;
 
+// Jedyne konto administratora. W repozytorium jest tylko hash hasła (scrypt), nie samo hasło.
+const ADMIN_EMAIL = 'anka@swiatczeka.pl';
+const ADMIN_SALT = Buffer.from('5ca3df132f58d273dafd1e3f1c8887a7', 'hex');
+const ADMIN_HASH = Buffer.from('3299aecc0fbef5c4ab546907877815075deaedbf87d86d6d5a21f35a7bce090b', 'hex');
+
+function sessionSecret() {
+  const explicit = process.env.SESSION_SECRET;
+  if (explicit && explicit.length >= 32) return explicit;
+  // Bez SESSION_SECRET używamy sekretu pochodnego od tokenu Vercel Blob (niedostępnego w repozytorium).
+  const fallback = process.env.BLOB_READ_WRITE_TOKEN;
+  if (fallback) return createHash('sha256').update(`swiatczeka-session:${fallback}`).digest('hex');
+  throw new Error('Brak SESSION_SECRET.');
+}
+
 function signature(payload: string) {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret || secret.length < 32) throw new Error('SESSION_SECRET must contain at least 32 characters.');
+  const secret = sessionSecret();
   return createHmac('sha256', secret).update(payload).digest('base64url');
 }
 
@@ -28,10 +41,10 @@ export async function isAdmin() {
   }
 }
 
-export function verifyPassword(password: string) {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return false;
-  return safeEqual(password, expected);
+export function verifyCredentials(email: string, password: string) {
+  const emailOk = safeEqual(email.trim().toLowerCase(), ADMIN_EMAIL);
+  const hash = scryptSync(password, ADMIN_SALT, ADMIN_HASH.length);
+  return timingSafeEqual(hash, ADMIN_HASH) && emailOk;
 }
 
 export async function createAdminSession() {
