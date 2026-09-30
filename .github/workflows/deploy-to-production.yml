@@ -1,0 +1,29 @@
+# Każdy push na gałąź claude/** trafia od razu do `main`, a stamtąd Vercel robi wdrożenie produkcyjne.
+# Bez pull requestów i ręcznego mergowania. Usuń ten plik, jeśli chcesz wrócić do recenzji zmian.
+name: Wdrożenie na produkcję
+
+on:
+  push:
+    branches: ['claude/**']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-to-production
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Wypchnij do main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git merge --no-edit origin/main
+          git push origin HEAD:main
