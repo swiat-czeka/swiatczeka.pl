@@ -1,6 +1,7 @@
 import { list } from '@vercel/blob';
 import { cache } from 'react';
 import legacyPosts from '@/data/legacy-posts.json';
+import { imageSources, isIncomplete } from '@/lib/legacy';
 import type { BlogPost, PostPreview } from '@/lib/types';
 
 const legacy = legacyPosts as BlogPost[];
@@ -31,18 +32,35 @@ async function getBlobDocuments(prefix: 'posts/' | 'pages/'): Promise<BlogPost[]
   }
 }
 
-export const getPosts = cache(async function getPosts() {
-  const livePosts = await getBlobDocuments('posts/');
-  return [...livePosts, ...legacy].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+function withStatus(post: BlogPost): BlogPost {
+  return { ...post, status: isIncomplete(post) ? 'draft' : 'published' };
+}
+
+/** Wszystkie wpisy (także drafty) — tylko dla panelu administratora. Dokument z Blob o tym samym adresie zastępuje wpis z archiwum. */
+export const getAllPosts = cache(async function getAllPosts() {
+  const live = await getBlobDocuments('posts/');
+  const liveSlugs = new Set(live.map((post) => post.slug));
+  return [...live, ...legacy.filter((post) => !liveSlugs.has(post.slug))]
+    .map(withStatus)
+    .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 });
+
+export const getPosts = cache(async function getPosts() {
+  return (await getAllPosts()).filter((post) => post.status !== 'draft');
+});
+
+export async function getDrafts() {
+  return (await getAllPosts()).filter((post) => post.status === 'draft');
+}
 
 export const getPages = cache(async function getPages() {
   return getBlobDocuments('pages/');
 });
 
 export function toPreview(post: BlogPost): PostPreview {
-  const { id, slug, title, date, author, excerpt, image, imageAlt, categories } = post;
-  return { id, slug, title, date, author, excerpt, image, imageAlt, categories };
+  const { id, slug, title, date, author, excerpt, imageAlt, categories } = post;
+  const { src, fallback } = imageSources(post);
+  return { id, slug, title, date, author, excerpt: excerpt.slice(0, 220), image: src, imageFallback: fallback, imageAlt, categories };
 }
 
 export async function getPostBySlug(slug: string) {
@@ -53,7 +71,9 @@ export async function getPageBySlug(slug: string) {
   return (await getPages()).find((page) => page.slug === slug);
 }
 
-export async function getArchivePage(search: string, category: string, offset: number, limit: number) {
+export type SortOrder = 'newest' | 'oldest' | 'title';
+
+export async function getArchivePage(search: string, category: string, offset: number, limit: number, sort: SortOrder = 'newest') {
   const posts = await getPosts();
   const query = search.toLocaleLowerCase('pl');
   const filtered = posts.filter((post) => {
@@ -61,6 +81,8 @@ export async function getArchivePage(search: string, category: string, offset: n
     const matchesCategory = !category || post.categories.some((term) => term.slug === category);
     return matchesQuery && matchesCategory;
   });
+  if (sort === 'oldest') filtered.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+  if (sort === 'title') filtered.sort((a, b) => a.title.localeCompare(b.title, 'pl'));
   return {
     posts: filtered.slice(offset, offset + limit).map(toPreview),
     total: filtered.length,
@@ -68,7 +90,7 @@ export async function getArchivePage(search: string, category: string, offset: n
   };
 }
 
-export async function getPopularCategories() {
+export async function getCategoryCounts() {
   const counts = new Map<string, { name: string; slug: string; count: number }>();
   for (const post of await getPosts()) {
     for (const term of post.categories) {
@@ -76,5 +98,22 @@ export async function getPopularCategories() {
       counts.set(term.slug, { ...term, count: (current?.count ?? 0) + 1 });
     }
   }
-  return [...counts.values()].sort((a, b) => b.count - a.count).slice(0, 12);
+  return counts;
+}
+
+export async function getPopularCategories() {
+  return [...(await getCategoryCounts()).values()].sort((a, b) => b.count - a.count).slice(0, 12);
+}
+
+export async function getAdjacentPosts(slug: string) {
+  const posts = await getPosts();
+  const index = posts.findIndex((post) => post.slug === slug);
+  if (index < 0) return { newer: undefined, older: undefined };
+  return { newer: posts[index - 1], older: posts[index + 1] };
+}
+
+export async function getRelatedPosts(post: BlogPost, limit = 3) {
+  const slugs = new Set(post.categories.map((category) => category.slug).filter((slug) => !['dokad-teraz', 'azja', 'afryka', 'europa', 'fotki', 'filmy'].includes(slug)));
+  const posts = await getPosts();
+  return posts.filter((other) => other.slug !== post.slug && other.image && other.categories.some((category) => slugs.has(category.slug))).slice(0, limit);
 }

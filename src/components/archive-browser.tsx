@@ -16,20 +16,21 @@ export function ArchiveBrowser({ initialPosts, categories, total, initialCategor
   const [posts, setPosts] = useState(initialPosts);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(initialCategory);
+  const [sort, setSort] = useState('newest');
   const [count, setCount] = useState(total);
   const [hasMore, setHasMore] = useState(total > initialPosts.length);
   const [loading, setLoading] = useState(false);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
-    if (!deferredQuery && category === initialCategory) {
+    if (!deferredQuery && category === initialCategory && sort === 'newest') {
       setPosts(initialPosts);
       setCount(total);
       setHasMore(total > initialPosts.length);
       return;
     }
     const controller = new AbortController();
-    const params = new URLSearchParams({ q: deferredQuery, category });
+    const params = new URLSearchParams({ q: deferredQuery, category, sort });
     setLoading(true);
     fetch(`/api/archive?${params}`, { signal: controller.signal })
       .then((response) => response.json() as Promise<ArchiveResponse>)
@@ -43,11 +44,11 @@ export function ArchiveBrowser({ initialPosts, categories, total, initialCategor
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [deferredQuery, category, initialCategory, initialPosts, total]);
+  }, [deferredQuery, category, sort, initialCategory, initialPosts, total]);
 
   async function loadMore() {
     setLoading(true);
-    const params = new URLSearchParams({ q: deferredQuery, category, offset: String(posts.length) });
+    const params = new URLSearchParams({ q: deferredQuery, category, sort, offset: String(posts.length) });
     try {
       const response = await fetch(`/api/archive?${params}`);
       const result = await response.json() as ArchiveResponse;
@@ -67,6 +68,7 @@ export function ArchiveBrowser({ initialPosts, categories, total, initialCategor
           <button className={!category ? 'filter-active' : ''} onClick={() => setCategory('')}>Wszystkie</button>
           {categories.map((item) => <button className={category === item.slug ? 'filter-active' : ''} key={item.slug} onClick={() => setCategory(category === item.slug ? '' : item.slug)}>{item.name}</button>)}
         </div>
+        <label className="sort-box"><span>Sortuj:</span><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sortowanie wpisów"><option value="newest">Najnowsze</option><option value="oldest">Najstarsze</option><option value="title">Alfabetycznie</option></select></label>
         <span className="result-count">{loading ? 'Szukam…' : `${count.toLocaleString('pl-PL')} historii`}</span>
       </div>
       {posts.length ? <div className="post-grid">{posts.map((post, index) => <PostCard key={post.id} post={post} index={index} />)}</div> : <div className="empty-state"><span>Bez pośpiechu.</span><p>Nie ma tu jeszcze takiej historii. Spróbuj innego miejsca.</p></div>}

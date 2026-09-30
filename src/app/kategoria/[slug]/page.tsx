@@ -9,9 +9,16 @@ import { getArchivePage, getPopularCategories, getPosts } from '@/lib/posts';
 
 type Props = { params: Promise<{ slug: string }> };
 
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  return { title: `${slug.replaceAll('-', ' ')} — nasze historie`, description: `Historie podróżnicze z kategorii ${slug.replaceAll('-', ' ')}.` };
+  const name = (await getPosts()).flatMap((post) => post.categories).find((category) => category.slug === slug)?.name ?? slug.replaceAll('-', ' ');
+  return {
+    title: `${name} — podróże i historie`,
+    description: `Nasze historie, zdjęcia i wskazówki z podróży: ${name}. Prawdziwe relacje z drogi z bloga Świat Czeka.`,
+    alternates: { canonical: `/kategoria/${slug}` },
+  };
 }
 
 export default async function CategoryPage({ params }: Props) {
