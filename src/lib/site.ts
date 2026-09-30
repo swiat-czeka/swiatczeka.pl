@@ -1,14 +1,14 @@
-// Jedno miejsce na menu i social media. Puste `href` = ikona się nie pokaże.
+// Jedno miejsce na menu i social media.
 export const nav = [
-  { label: 'Dokąd dalej', href: '/#kierunki' },
+  { label: 'Nasze podróże', href: '/mapa' },
+  { label: 'Dokąd dalej?', href: '/kategoria/dokad-teraz' },
   { label: 'Vlog', href: '/kategoria/filmy' },
   { label: 'Fotki', href: '/kategoria/fotki' },
-  { label: 'Historie', href: '/#historie' },
-  { label: 'O nas', href: '/#o-nas' },
+  { label: 'O nas', href: '/#o-blogu' },
 ];
 
-export const socials: { label: string; href: string }[] = [
-  { label: 'Facebook', href: '' },
-  { label: 'Instagram', href: '' },
-  { label: 'YouTube', href: '' },
-];
+export const socials = [
+  { label: 'Facebook', href: 'https://www.facebook.com/swiatczeka', icon: 'facebook' },
+  { label: 'YouTube', href: 'https://www.youtube.com/czekaswiat', icon: 'youtube' },
+  { label: 'Instagram', href: 'https://www.instagram.com/anka_szostak/', icon: 'instagram' },
+] as const;

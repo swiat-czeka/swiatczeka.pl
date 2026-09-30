@@ -111,8 +111,12 @@ export default async function StoryPage({ params }: Props) {
           </article>
         </div>
         <nav className="story-pager" aria-label="Poprzedni i następny wpis">
-          {older ? <Link href={`/wpis/${older.slug}`} rel="prev"><span><ArrowLeft size={15} /> Starszy wpis</span><strong>{older.title}</strong></Link> : <span />}
-          {newer ? <Link href={`/wpis/${newer.slug}`} rel="next" className="pager-next"><span>Nowszy wpis <ArrowRight size={15} /></span><strong>{newer.title}</strong></Link> : <span />}
+          {[{ post: older, dir: 'prev' as const }, { post: newer, dir: 'next' as const }].map(({ post: item, dir }) => item ? (
+            <Link key={dir} href={`/wpis/${item.slug}`} rel={dir} className={`pager-card pager-${dir}`}>
+              {item.image && <span className="pager-thumb"><SmartImage src={imageSources(item).src} fallback={imageSources(item).fallback} alt="" fill sizes="72px" quality={70} /></span>}
+              <span className="pager-copy"><small>{dir === 'prev' ? <><ArrowLeft size={13} /> Starszy wpis</> : <>Nowszy wpis <ArrowRight size={13} /></>}</small><strong>{item.title}</strong></span>
+            </Link>
+          ) : <span key={dir} />)}
         </nav>
         {related.length > 0 && (
           <section className="story-related" aria-labelledby="related-title">

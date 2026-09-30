@@ -28,13 +28,12 @@ export function imageSources(post: Pick<BlogPost, 'image'>) {
   return { src, fallback: fallback !== src ? fallback : undefined };
 }
 
-/** Wpis bez tekstu i bez zdjęć (np. sam link do albumu Picasa) traktujemy jako niedokończony. */
+/** Wpis bez tekstu (same zdjęcia albo sam link do albumu) uznajemy za niedokończony. Wyjątek: osadzony film. */
 export function isIncomplete(post: BlogPost) {
   if (post.status) return post.status === 'draft';
   if (post.format === 'text') return false;
-  const text = plainText(post.content);
-  const hasImages = /<img\s/i.test(post.content) || Boolean(post.gallery?.length) || /<iframe\s/i.test(post.content);
-  return text.length < 40 && !hasImages;
+  if (/<iframe\s/i.test(post.content)) return false;
+  return plainText(post.content).length < 40;
 }
 
 export function metaDescription(post: BlogPost) {

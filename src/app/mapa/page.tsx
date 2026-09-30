@@ -24,7 +24,7 @@ export default async function MapPage() {
         <p className="section-label">Zdrapka świata</p>
         <h1>Gdzie już <em>byliśmy.</em></h1>
         <p className="category-intro">{visited} krajów zdrapanych z szarej mapy. Kliknij zielony kraj, żeby przeczytać historie stamtąd.</p>
-        <WorldMap counts={slugCounts} />
+        <WorldMap counts={slugCounts} openPicker />
       </main>
       <SiteFooter />
     </>

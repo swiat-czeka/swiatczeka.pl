@@ -7,16 +7,17 @@ import { countryCategories } from '@/lib/countries';
 import { imageSources } from '@/lib/legacy';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { getArchivePage, getCategoryCounts, getPopularCategories, getPosts } from '@/lib/posts';
+import { getArchivePage, getCategoryCounts, getPopularCategories, getPosts, getTotalCount } from '@/lib/posts';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [posts, archive, categories, categoryCounts] = await Promise.all([
+  const [posts, archive, categories, categoryCounts, totalStories] = await Promise.all([
     getPosts(),
     getArchivePage('', '', 0, 12),
     getPopularCategories(),
     getCategoryCounts(),
+    getTotalCount(),
   ]);
   const featured = posts.find((post) => post.image) ?? posts[0];
   const featuredImage = featured ? imageSources(featured) : undefined;
@@ -38,7 +39,7 @@ export default async function HomePage() {
             <a className="hero-link" href="#historie">Odkrywaj historie <ArrowDown size={16} /></a>
           </div>
           {featured && <Link className="hero-caption" href={`/wpis/${featured.slug}`}><span>Najnowsza opowieść</span><strong>{featured.title}</strong><ArrowUpRight size={18} /></Link>}
-          <span className="hero-index">01 — {posts.length.toLocaleString('pl-PL')}</span>
+          <span className="hero-index">01 — {totalStories.toLocaleString('pl-PL')}</span>
         </section>
 
         <section className="intro-band" id="kierunki">
@@ -51,7 +52,7 @@ export default async function HomePage() {
           <span className="section-label">O tym blogu</span>
           <div>
             <h2 id="about-title">Prywatny dziennik <em>z drogi.</em></h2>
-            <p>Świat Czeka to blog podróżniczy Anki i przyjaciół. Od 2005 roku zapisujemy tu prawdziwe historie z wypraw: {posts.length.toLocaleString('pl-PL')} opowieści z {countries} krajów, od Azji po Amerykę Południową. Bez wielkich planów i katalogowych zdjęć, za to z drogą, ludźmi i jedzeniem, które zapamiętaliśmy.</p>
+            <p>Świat Czeka to blog podróżniczy Anki i przyjaciół. Od 2005 roku zapisujemy tu prawdziwe historie z wypraw: {totalStories.toLocaleString('pl-PL')} opowieści z {countries} krajów, od Azji po Amerykę Południową. Bez wielkich planów i katalogowych zdjęć, za to z drogą, ludźmi i jedzeniem, które zapamiętaliśmy.</p>
             <p>Szukasz konkretnego kraju? Kliknij go na mapie poniżej albo przejrzyj archiwum, posortuj je po dacie i wybierz miejsce.</p>
           </div>
         </section>
@@ -62,7 +63,7 @@ export default async function HomePage() {
         </section>
 
         <section className="stories-section" id="historie">
-          <div className="section-heading"><div><span className="section-label">Z drogi, z serca</span><h2>Historie, które <em>zostają.</em></h2></div><span className="archive-total">{posts.length.toLocaleString('pl-PL')} opowieści</span></div>
+          <div className="section-heading"><div><span className="section-label">Z drogi, z serca</span><h2>Historie, które <em>zostają.</em></h2></div><span className="archive-total">{totalStories.toLocaleString('pl-PL')} opowieści, {posts.length.toLocaleString('pl-PL')} już online</span></div>
           <ArchiveBrowser initialPosts={archive.posts} categories={categories.slice(0, 8)} total={archive.total} />
         </section>
 

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   try {
     await createAdminSession();
   } catch {
-    return NextResponse.json({ error: 'Brakuje konfiguracji sesji (SESSION_SECRET lub magazyn Blob).' }, { status: 503 });
+    return NextResponse.json({ error: 'Brakuje konfiguracji w Vercel: dodaj zmienną SESSION_SECRET (Settings → Environment Variables, min. 32 znaki) i zrób Redeploy.' }, { status: 503 });
   }
   return NextResponse.json({ ok: true });
 }

@@ -27,7 +27,7 @@ function getShapes(): Country[] {
   return shapes;
 }
 
-export function WorldMap({ counts }: { counts: Map<string, number> }) {
+export function WorldMap({ counts, openPicker = false }: { counts: Map<string, number>; openPicker?: boolean }) {
   const visited = Object.entries(countryCategories)
     .map(([name, info]) => ({ name, ...info, count: counts.get(info.slug) ?? 0 }))
     .filter((country) => country.count > 0)
@@ -49,11 +49,14 @@ export function WorldMap({ counts }: { counts: Map<string, number> }) {
           );
         })}
       </svg>
-      <ul className="map-legend" aria-label="Odwiedzone kraje">
-        {visited.map((country) => (
-          <li key={country.slug}><Link href={`/kategoria/${country.slug}`}>{country.label}<span>{country.count}</span></Link></li>
-        ))}
-      </ul>
+      <details className="map-picker" open={openPicker}>
+        <summary>Wybierz kraj <span>{visited.length}</span></summary>
+        <ul aria-label="Odwiedzone kraje">
+          {visited.map((country) => (
+            <li key={country.slug}><Link href={`/kategoria/${country.slug}`}>{country.label}<span>{country.count}</span></Link></li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }

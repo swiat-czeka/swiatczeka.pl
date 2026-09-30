@@ -33,7 +33,7 @@ async function getBlobDocuments(prefix: 'posts/' | 'pages/'): Promise<BlogPost[]
 }
 
 function withStatus(post: BlogPost): BlogPost {
-  return { ...post, status: isIncomplete(post) ? 'draft' : 'published' };
+  return { ...post, author: 'Anka', status: isIncomplete(post) ? 'draft' : 'published' };
 }
 
 /** Wszystkie wpisy (także drafty) — tylko dla panelu administratora. Dokument z Blob o tym samym adresie zastępuje wpis z archiwum. */
@@ -48,6 +48,11 @@ export const getAllPosts = cache(async function getAllPosts() {
 export const getPosts = cache(async function getPosts() {
   return (await getAllPosts()).filter((post) => post.status !== 'draft');
 });
+
+/** Liczba wszystkich historii, także jeszcze nieopublikowanych (do liczników na stronie). */
+export async function getTotalCount() {
+  return (await getAllPosts()).length;
+}
 
 export async function getDrafts() {
   return (await getAllPosts()).filter((post) => post.status === 'draft');
