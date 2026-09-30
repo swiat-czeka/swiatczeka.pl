@@ -22,6 +22,8 @@ function VideoCard({ video }: { video: Video }) {
         )}
       </div>
       <h3>{video.title}</h3>
+      {(video.date || video.duration) && <p className="video-meta">{[video.date && new Intl.DateTimeFormat('pl-PL', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(video.date)), video.duration].filter(Boolean).join(' · ')}</p>}
+      {video.description && <p className="video-desc">{video.description}</p>}
     </article>
   );
 }
@@ -30,7 +32,7 @@ export function VideoGallery({ videos }: { videos: Video[] }) {
   const [query, setQuery] = useState('');
   const [visible, setVisible] = useState(PAGE);
   const deferred = useDeferredValue(query).trim().toLocaleLowerCase('pl');
-  const filtered = deferred ? videos.filter((video) => video.title.toLocaleLowerCase('pl').includes(deferred)) : videos;
+  const filtered = deferred ? videos.filter((video) => `${video.title} ${video.description ?? ''}`.toLocaleLowerCase('pl').includes(deferred)) : videos;
   return (
     <div className="video-gallery">
       <div className="archive-tools">

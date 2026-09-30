@@ -668,3 +668,16 @@ img { max-width: 100%; }
 .video-card h3 { margin: 12px 0 0; font-family: var(--font-body); font-size: 15px; font-weight: 700; line-height: 1.4; }
 @media (max-width: 900px) { .video-page { padding: 32px 5% 70px; } .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .video-grid { grid-template-columns: 1fr; gap: 28px; } }
+
+/* --- Mapa z kontynentami --- */
+.map-tabs { display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.map-tabs::-webkit-scrollbar { display: none; }
+.map-tabs button { flex: 0 0 auto; min-height: 44px; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s, border-color .2s; }
+.map-tabs button span { color: var(--muted); font-weight: 400; }
+.map-tabs button:hover { border-color: var(--green-deep); }
+.map-tabs button.tab-active { border-color: var(--green-deep); background: var(--green-deep); color: var(--paper); }
+.map-tabs button.tab-active span { color: var(--green); }
+.world-map svg { max-height: 78vh; margin: 0 auto; }
+@media (max-width: 700px) { .world-map svg { max-height: 70svh; } }
+.video-meta { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+.video-desc { margin: 8px 0 0; color: #4b5449; font-size: 14px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
