@@ -248,7 +248,7 @@ export function Studio({ authenticated, drafts, totals, config }: {
   if (!authenticated) {
     return (
       <main className="studio-login">
-        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.jpg" width={2560} height={887} alt="Świat Czeka" /></Link>
+        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.png" width={2576} height={903} alt="Świat Czeka" /></Link>
         <div className="login-panel"><span className="section-label">Panel administratora</span><h1>Witaj <em>w domu.</em></h1><p>To miejsce jest tylko dla autorki bloga.</p>
           <form onSubmit={login}>
             <label htmlFor="email">E-mail</label><input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="username" required />
@@ -268,7 +268,7 @@ export function Studio({ authenticated, drafts, totals, config }: {
   return (
     <main className="studio-shell">
       <header className="studio-header">
-        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.jpg" width={2560} height={887} alt="Świat Czeka" /></Link>
+        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.png" width={2576} height={903} alt="Świat Czeka" /></Link>
         <nav className="studio-tabs" aria-label="Panel">
           <button className={tab === 'overview' ? 'tab-active' : ''} onClick={() => setTab('overview')}><BarChart3 size={16} /> Przegląd</button>
           <button className={tab === 'new' ? 'tab-active' : ''} onClick={() => (tab === 'new' ? undefined : newPost())}><Mic size={16} /> Nowy wpis</button>

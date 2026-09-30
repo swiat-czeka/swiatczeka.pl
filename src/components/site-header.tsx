@@ -20,7 +20,7 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <Link className="brand-link" href="/" aria-label="Świat Czeka — strona główna">
-        <Image src="/swiatczeka-logo.jpg" width={2560} height={887} alt="Świat Czeka" priority />
+        <Image src="/swiatczeka-logo.png" width={2576} height={903} alt="Świat Czeka" priority />
       </Link>
       <nav className="main-nav" aria-label="Główna nawigacja">
         {nav.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}

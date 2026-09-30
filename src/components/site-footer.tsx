@@ -8,7 +8,7 @@ export function SiteFooter() {
     <footer className="site-footer" id="o-nas">
       <div className="footer-top">
         <div>
-          <Link className="footer-logo" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.jpg" width={2560} height={887} alt="Świat Czeka" /></Link>
+          <Link className="footer-logo" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.png" width={2576} height={903} alt="Świat Czeka" /></Link>
           <p>Świat jest wielki. Dobrze go poznawać<br />po kawałku, po swojemu.</p>
         </div>
         <SocialLinks className="footer-social" />
