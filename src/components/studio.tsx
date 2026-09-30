@@ -38,7 +38,7 @@ export function Studio({ authenticated, drafts, stats, statsConfigured, totals, 
   stats: Stats;
   statsConfigured: boolean;
   totals: { published: number; drafts: number };
-  config: { openai: boolean; blob: boolean; youtube: boolean };
+  config: { ai: boolean; blob: boolean; youtube: boolean };
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -267,7 +267,7 @@ export function Studio({ authenticated, drafts, stats, statsConfigured, totals, 
   }
 
   const maxDay = Math.max(1, ...(stats?.perDay.map((day) => day.count) ?? [1]));
-  const missing = [!config.blob && 'magazyn Vercel Blob', !config.openai && 'klucz OPENAI_API_KEY'].filter(Boolean);
+  const missing = [!config.blob && 'magazyn Vercel Blob', !config.ai && 'klucz ANTHROPIC_API_KEY'].filter(Boolean);
 
   return (
     <main className="studio-shell">
