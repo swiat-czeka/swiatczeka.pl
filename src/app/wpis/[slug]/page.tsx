@@ -8,7 +8,7 @@ import { SiteHeader } from '@/components/site-header';
 import { formatDate } from '@/components/post-card';
 import { getPostBySlug } from '@/lib/posts';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 
