@@ -64,7 +64,7 @@ export function WorldMap({ counts, openPicker = false }: { counts: Map<string, n
         const hit = bySlug.get(shape.name);
         if (!hit) return <path key={shape.id} className="map-country" d={shape.d} />;
         return (
-          <Link key={shape.id} href={`/kategoria/${hit.slug}`} aria-label={`${hit.label} — ${hit.count} ${hit.count === 1 ? 'wpis' : 'wpisów'}`}>
+          <Link key={shape.id} href={`/kategoria/${hit.slug}`} data-continent={hit.continent} aria-label={`${hit.label} — ${hit.count} ${hit.count === 1 ? 'wpis' : 'wpisów'}`}>
             <path className={`map-country map-visited map-shade-${shade(hit.count)}`} d={shape.d}><title>{`${hit.label} · ${hit.count}`}</title></path>
           </Link>
         );

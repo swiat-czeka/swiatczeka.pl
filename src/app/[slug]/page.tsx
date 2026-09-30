@@ -7,7 +7,7 @@ import { SiteHeader } from '@/components/site-header';
 import { SmartImage } from '@/components/smart-image';
 import { PageView } from '@/components/page-view';
 import { PostCard, formatDate } from '@/components/post-card';
-import { imageSources, metaDescription, metaTitle, plainText, rewriteLegacyHtml, slugify } from '@/lib/legacy';
+import { imageSources, metaDescription, metaTitle, plainText, rewriteLegacyHtml, slugify, tidyExcerpt } from '@/lib/legacy';
 import { getAdjacentPosts, getPageBySlug, getPostBySlug, getRelatedPosts, toPreview } from '@/lib/posts';
 import type { BlogPost } from '@/lib/types';
 
@@ -104,7 +104,7 @@ export default async function StoryPage({ params }: Props) {
         <header className="story-header">
           <div className="story-meta"><span>{post.categories[0]?.name ?? 'Dziennik z drogi'}</span><span>·</span><time dateTime={post.date}>{formatDate(post.date)}</time></div>
           <h1>{post.title}</h1>
-          {post.excerpt && <p className="story-lead">{post.excerpt}</p>}
+          {post.excerpt && <p className="story-lead">{tidyExcerpt(post.excerpt)}</p>}
           <div className="story-byline"><span className="byline-avatar">{post.author.slice(0, 1)}</span><span>Opowiada <strong>{post.author}</strong></span><span className="story-reading">{minutes} min czytania</span></div>
         </header>
         {post.youtubeId ? (

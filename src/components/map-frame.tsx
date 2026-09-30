@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type MouseEvent, type ReactNode } from 'react';
 
 export type MapRegion = { slug: string; label: string; view: [number, number, number, number] };
 export type MapCountry = { name: string; slug: string; label: string; continent: string; count: number };
@@ -15,11 +15,17 @@ export function MapFrame({ regions, countries, regionCounts, openPicker, childre
   children: ReactNode;
 }) {
   const [region, setRegion] = useState('all');
-  const richest = regions.filter((item) => item.slug !== 'all').sort((a, b) => (regionCounts[b.slug] ?? 0) - (regionCounts[a.slug] ?? 0))[0]?.slug ?? 'all';
 
-  useEffect(() => {
-    if (window.matchMedia('(max-width: 700px)').matches) setRegion(richest);
-  }, [richest]);
+  // Na widoku całego świata kliknięcie kraju przybliża jego kontynent; dopiero w przybliżeniu prowadzi do wpisów.
+  function onMapClick(event: MouseEvent<SVGSVGElement>) {
+    if (region !== 'all') return;
+    const link = (event.target as Element).closest('a[data-continent]');
+    const continent = link?.getAttribute('data-continent');
+    if (!continent) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setRegion(continent);
+  }
 
   const active = regions.find((item) => item.slug === region) ?? regions[0];
   const [x, y, w, h] = active.view;
@@ -34,7 +40,8 @@ export function MapFrame({ regions, countries, regionCounts, openPicker, childre
           </button>
         ) : null)}
       </div>
-      <svg viewBox={`${x} ${y} ${w} ${h}`} role="group" aria-label="Mapa świata z odwiedzonymi krajami" preserveAspectRatio="xMidYMid meet" style={{ aspectRatio: `${w} / ${h}` }}>
+      <p className="map-hint">{region === 'all' ? 'Dotknij kraju lub wybierz kontynent, żeby przybliżyć mapę.' : 'Dotknij podświetlonego kraju, żeby zobaczyć historie stamtąd.'}</p>
+      <svg onClickCapture={onMapClick} viewBox={`${x} ${y} ${w} ${h}`} role="group" aria-label="Mapa świata z odwiedzonymi krajami" preserveAspectRatio="xMidYMid meet" style={{ aspectRatio: `${w} / ${h}` }}>
         {children}
       </svg>
       <details className="map-picker" open={openPicker}>

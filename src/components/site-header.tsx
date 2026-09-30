@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { nav } from '@/lib/site';
 import { SocialLinks } from '@/components/social-links';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -26,6 +27,7 @@ export function SiteHeader() {
         {nav.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
       </nav>
       <SocialLinks className="header-social" />
+      <ThemeToggle />
       <button className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? 'Zamknij menu' : 'Otwórz menu'} onClick={() => setOpen(!open)}>
         {open ? <X size={24} /> : <Menu size={24} />}
       </button>

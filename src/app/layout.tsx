@@ -23,7 +23,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pl">
+    <html lang="pl" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: "try{var t=localStorage.getItem('theme');if(t=='dark'||t=='light')document.documentElement.dataset.theme=t}catch(e){}" }} />
+      </head>
       <body className={`${sans.variable} ${serif.variable}`}>{children}<Analytics /></body>
     </html>
   );

@@ -86,3 +86,11 @@ export function htmlToText(html: string) {
 
 /** Adresy zajęte przez aplikację i stare podstrony. Wpis o takim adresie dostaje przyrostek. */
 export const RESERVED_SLUGS = new Set(['studio', 'mapa', 'api', 'kategoria', 'category', 'strona', 'wpis', 'sitemap', 'robots', 'klub', 'dokad-dalej', 'cookie-policy', 'nasze-podroze', 'vlog', 'portfolio-fotki', 'spotkania', 'azja', 'afryka', 'europa', 'australia', 'ameryka-polnocna', 'ameryka-poludniowa', 'australia-i-oceania', 'feed', 'tag', 'author', 'login']);
+
+/** Wstęp ze starego wpisu bywa ucięty w połowie słowa lub adresu: usuwa linki i kończy na pełnym słowie. */
+export function tidyExcerpt(excerpt: string) {
+  const text = excerpt.replace(/https?:\/\/\S*/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!text || /[.!?…"”)]$/.test(text)) return text;
+  const cut = text.slice(0, text.lastIndexOf(' ') > 40 ? text.lastIndexOf(' ') : text.length).replace(/[,;:\s-]+$/, '');
+  return `${cut}…`;
+}

@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { continents } from '@/lib/countries';
 import legacyPages from '@/data/legacy-pages.json';
 import legacyPosts from '@/data/legacy-posts.json';
-import { imageSources, isIncomplete } from '@/lib/legacy';
+import { imageSources, isIncomplete, tidyExcerpt } from '@/lib/legacy';
 import type { BlogPost, PostPreview } from '@/lib/types';
 
 const legacy = legacyPosts as BlogPost[];
@@ -73,7 +73,7 @@ export const getPages = cache(async function getPages() {
 export function toPreview(post: BlogPost): PostPreview {
   const { id, slug, title, date, author, excerpt, imageAlt, categories } = post;
   const { src, fallback } = imageSources(post);
-  return { id, slug, title, date, author, excerpt: excerpt.slice(0, 220), image: src, imageFallback: fallback, imageAlt, categories };
+  return { id, slug, title, date, author, excerpt: tidyExcerpt(excerpt.slice(0, 220)), image: src, imageFallback: fallback, imageAlt, categories };
 }
 
 export async function getPostBySlug(slug: string) {
