@@ -35,7 +35,7 @@ export function Studio({ authenticated, drafts, totals, config }: {
   authenticated: boolean;
   drafts: DraftItem[];
   totals: { published: number; drafts: number };
-  config: { ai: boolean; blob: boolean; youtube: boolean };
+  config: { ai: boolean; blob: boolean };
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -218,22 +218,6 @@ export function Studio({ authenticated, drafts, totals, config }: {
     setTab('new');
   }
 
-  async function syncYoutube() {
-    setBusy(true);
-    setError('');
-    setNotice('');
-    try {
-      const response = await fetch('/api/cron/youtube', { method: 'POST' });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'Synchronizacja nie powiodła się.');
-      setNotice(result.added?.length ? `Dodano ${result.added.length} nowych filmów z YouTube.` : 'Brak nowych filmów na kanale.');
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Synchronizacja nie powiodła się.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function copyInstagram() {
     await navigator.clipboard.writeText(draft.instagram).catch(() => undefined);
     setCopied(true);
@@ -311,9 +295,9 @@ export function Studio({ authenticated, drafts, totals, config }: {
             </section>
 
             <section className="studio-panel" aria-labelledby="yt-title">
-              <h2 id="yt-title">Vlog z YouTube</h2>
-              <p className="studio-hint">Nowe filmy z kanału „Czeka Świat” trafiają na bloga automatycznie raz dziennie (kategoria „Filmy”). Możesz też pobrać je od razu.</p>
-              <button className="studio-secondary" onClick={syncYoutube} disabled={busy || !config.youtube}><RefreshCw size={15} /> Pobierz nowe filmy teraz</button>
+              <h2 id="yt-title">Wideo z YouTube</h2>
+              <p className="studio-hint">Strona „Wideo” sama pokazuje wszystkie filmy z kanału „Czeka Świat”, a nowe pojawiają się tam po publikacji na YouTube (odświeżanie co godzinę). Nic nie musisz robić.</p>
+              <Link className="studio-secondary" href="/wideo"><RefreshCw size={15} /> Zobacz stronę Wideo</Link>
             </section>
           </>
         )}

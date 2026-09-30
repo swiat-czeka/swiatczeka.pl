@@ -31,3 +31,13 @@ export const countryCategories: Record<string, { slug: string; label: string }> 
   Mexico: { slug: 'meksyk', label: 'Meksyk' },
   Bolivia: { slug: 'boliwia', label: 'Boliwia' },
 };
+
+/** Kontynenty (kategorie nadrzędne na blogu) — używane w filtrach i na stronie głównej. */
+export const continents = [
+  { slug: 'azja', label: 'Azja' },
+  { slug: 'afryka', label: 'Afryka' },
+  { slug: 'ameryka-poludniowa', label: 'Ameryka Południowa' },
+  { slug: 'ameryka-polnocna', label: 'Ameryka Północna' },
+  { slug: 'europa', label: 'Europa' },
+  { slug: 'australia-i-oceania', label: 'Australia i Oceania' },
+];

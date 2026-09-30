@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { ArchiveBrowser } from '@/components/archive-browser';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { getArchivePage, getPopularCategories, getPosts } from '@/lib/posts';
+import { getArchivePage, getContinents, getPosts } from '@/lib/posts';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -29,7 +29,7 @@ export default async function CategoryPage({ params }: Props) {
   const name = posts[0].categories.find((category) => category.slug === slug)?.name ?? slug;
   const [archive, categories] = await Promise.all([
     getArchivePage('', slug, 0, 12),
-    getPopularCategories(),
+    getContinents(),
   ]);
   return (
     <>
@@ -37,7 +37,7 @@ export default async function CategoryPage({ params }: Props) {
       <main className="category-page" id="top">
         <Link className="back-link" href="/#kierunki"><ArrowLeft size={16} /> Wszystkie kierunki</Link>
         <p className="section-label">Historie z podróży</p><h1>{name}<em>.</em></h1><p className="category-intro">{posts.length} {posts.length === 1 ? 'opowieść' : 'opowieści'} z tego miejsca. Każda zaczyna się od drogi.</p>
-        <ArchiveBrowser initialPosts={archive.posts} categories={categories.slice(0, 8)} total={archive.total} initialCategory={slug} />
+        <ArchiveBrowser initialPosts={archive.posts} categories={categories} total={archive.total} initialCategory={slug} />
       </main>
       <SiteFooter />
     </>

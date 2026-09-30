@@ -1,5 +1,6 @@
 import { list } from '@vercel/blob';
 import { cache } from 'react';
+import { continents } from '@/lib/countries';
 import legacyPages from '@/data/legacy-pages.json';
 import legacyPosts from '@/data/legacy-posts.json';
 import { imageSources, isIncomplete } from '@/lib/legacy';
@@ -128,4 +129,12 @@ export async function getRelatedPosts(post: BlogPost, limit = 3) {
   const slugs = new Set(post.categories.map((category) => category.slug).filter((slug) => !['dokad-teraz', 'azja', 'afryka', 'europa', 'fotki', 'filmy'].includes(slug)));
   const posts = await getPosts();
   return posts.filter((other) => other.slug !== post.slug && other.image && other.categories.some((category) => slugs.has(category.slug))).slice(0, limit);
+}
+
+/** Kontynenty z liczbą opublikowanych wpisów (tylko te, w których coś jest). */
+export async function getContinents() {
+  const counts = await getCategoryCounts();
+  return continents
+    .map((continent) => ({ name: continent.label, slug: continent.slug, count: counts.get(continent.slug)?.count ?? 0 }))
+    .filter((continent) => continent.count > 0);
 }

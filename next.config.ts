@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'czekaswiat.pl', pathname: '/**' },
+      { protocol: 'https', hostname: 'i.ytimg.com', pathname: '/vi/**' },
       { protocol: 'https', hostname: '*.public.blob.vercel-storage.com', pathname: '/**' },
     ],
   },
@@ -18,7 +19,7 @@ const nextConfig: NextConfig = {
       { source: '/category/:parent/:slug', destination: '/kategoria/:slug', permanent: true },
       { source: '/category/:slug', destination: '/kategoria/:slug', permanent: true },
       { source: '/nasze-podroze', destination: '/mapa', permanent: true },
-      { source: '/vlog', destination: '/kategoria/filmy', permanent: true },
+      { source: '/vlog', destination: '/wideo', permanent: true },
       { source: '/portfolio-fotki', destination: '/kategoria/fotki', permanent: true },
       { source: '/spotkania', destination: '/', permanent: true },
       ...regions.map((region) => ({ source: `/${region}`, destination: `/kategoria/${region}`, permanent: true })),

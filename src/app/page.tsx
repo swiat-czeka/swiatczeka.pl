@@ -7,15 +7,15 @@ import { countryCategories } from '@/lib/countries';
 import { imageSources } from '@/lib/legacy';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { getArchivePage, getCategoryCounts, getPopularCategories, getPosts, getTotalCount } from '@/lib/posts';
+import { getArchivePage, getCategoryCounts, getContinents, getPosts, getTotalCount } from '@/lib/posts';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [posts, archive, categories, categoryCounts, totalStories] = await Promise.all([
+  const [posts, archive, continentList, categoryCounts, totalStories] = await Promise.all([
     getPosts(),
     getArchivePage('', '', 0, 12),
-    getPopularCategories(),
+    getContinents(),
     getCategoryCounts(),
     getTotalCount(),
   ]);
@@ -23,7 +23,6 @@ export default async function HomePage() {
   const featuredImage = featured ? imageSources(featured) : undefined;
   const slugCounts = new Map([...categoryCounts].map(([slug, category]) => [slug, category.count]));
   const countries = Object.values(countryCategories).filter((country) => (slugCounts.get(country.slug) ?? 0) > 0).length;
-  const places = categories.filter((category) => !['azja', 'afryka', 'ameryka-poludniowa', 'ameryka-polnocna', 'europa', 'fotki', 'filmy', 'dokad-teraz'].includes(category.slug)).slice(0, 6);
 
   return (
     <>
@@ -45,7 +44,7 @@ export default async function HomePage() {
         <section className="intro-band" id="kierunki">
           <p className="section-label">Świat czeka</p>
           <div className="intro-copy"><h2>Nie kolekcjonujemy<br /><em>miejsc. Zbieramy chwile.</em></h2><p>Zaczęło się od biletu w jedną stronę. Został dziennik pełen spotkań, smaków i dróg, którymi najchętniej pójdziemy jeszcze raz.</p></div>
-          <div className="place-list">{places.map((place, index) => <Link key={place.slug} href={`/kategoria/${place.slug}`}><span>0{index + 1}</span>{place.name}<ArrowUpRight size={15} /></Link>)}</div>
+          <div className="place-list">{continentList.map((place) => <Link key={place.slug} href={`/kategoria/${place.slug}`}>{place.name}<span>{place.count}</span><ArrowUpRight size={15} /></Link>)}</div>
         </section>
 
         <section className="about-section" id="o-blogu" aria-labelledby="about-title">
@@ -64,7 +63,7 @@ export default async function HomePage() {
 
         <section className="stories-section" id="historie">
           <div className="section-heading"><div><span className="section-label">Z drogi, z serca</span><h2>Historie, które <em>zostają.</em></h2></div><span className="archive-total">{totalStories.toLocaleString('pl-PL')} opowieści, {posts.length.toLocaleString('pl-PL')} już online</span></div>
-          <ArchiveBrowser initialPosts={archive.posts} categories={categories.slice(0, 8)} total={archive.total} />
+          <ArchiveBrowser initialPosts={archive.posts} categories={continentList} total={archive.total} />
         </section>
 
         <section className="closing-note"><Link className="closing-star" href="/studio" aria-label="Panel administratora">✳</Link><p>Najlepszy plan podróży?<br /><em>Ten, który jeszcze może się zmienić.</em></p><span className="closing-signature">Anka & przyjaciele</span></section>

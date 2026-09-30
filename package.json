@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint .",
     "import:pages": "node scripts/import-pages.mjs",
-    "fix:media": "node scripts/fix-legacy-media.mjs"
+    "fix:media": "node scripts/fix-legacy-media.mjs",
+    "import:videos": "node scripts/import-videos.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",

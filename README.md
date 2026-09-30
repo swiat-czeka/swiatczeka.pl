@@ -17,7 +17,7 @@ Eksport można przetworzyć ponownie poleceniem `npm run import:wordpress`. Impo
 
 1. Zaimportuj repozytorium `swiat-czeka/swiatczeka.pl` do Vercel (Next.js, ustawienia domyślne).
 2. W Storage dodaj **Blob** (daje `BLOB_READ_WRITE_TOKEN`) (statystyki odwiedzin: włącz Analytics w projekcie).
-3. W Settings → Environment Variables dodaj `ANTHROPIC_API_KEY`. Dodaj też `SESSION_SECRET` (min. 32 losowe znaki). Kanał YouTube „Czeka Świat” jest wpisany w `src/lib/site.ts`, więc nic więcej nie trzeba.
+3. W Settings → Environment Variables dodaj `ANTHROPIC_API_KEY`. Dodaj też `SESSION_SECRET` (min. 32 losowe znaki). Kanał YouTube „Czeka Świat” jest wpisany w `src/lib/site.ts`; strona `/wideo` pokazuje jego filmy (`npm run import:videos` odświeża pełną listę, najnowsze 15 dociąga sama z RSS).
 4. Zrób redeploy, a domenę `swiatczeka.pl` podepnij na samym końcu.
 
 ## Panel administratora

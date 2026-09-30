@@ -7,7 +7,7 @@ export const metadata = { title: 'Studio', robots: { index: false, follow: false
 export const dynamic = 'force-dynamic';
 
 export default async function StudioPage() {
-  if (!(await isAdmin())) return <Studio authenticated={false} drafts={[]} totals={{ published: 0, drafts: 0 }} config={{ ai: false, blob: false, youtube: false }} />;
+  if (!(await isAdmin())) return <Studio authenticated={false} drafts={[]} totals={{ published: 0, drafts: 0 }} config={{ ai: false, blob: false }} />;
   const posts = await getAllPosts();
   const drafts: DraftItem[] = posts.filter((post) => post.status === 'draft').map((post) => ({
     id: post.id,
@@ -28,7 +28,7 @@ export default async function StudioPage() {
       authenticated
       drafts={drafts}
       totals={{ published: posts.length - drafts.length, drafts: drafts.length }}
-      config={{ ai: Boolean(process.env.ANTHROPIC_API_KEY), blob: Boolean(process.env.BLOB_READ_WRITE_TOKEN), youtube: true }}
+      config={{ ai: Boolean(process.env.ANTHROPIC_API_KEY), blob: Boolean(process.env.BLOB_READ_WRITE_TOKEN) }}
     />
   );
 }
