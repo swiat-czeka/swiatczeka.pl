@@ -12,20 +12,13 @@ export function plainText(html: string) {
     .trim();
 }
 
-/** WordPress zapisuje miniatury jako `nazwa-622x351.jpg` (czasem z doklejoną cyfrą). Oryginał to `nazwa.jpg`. */
-export function originalImageUrl(url: string) {
-  if (!url) return url;
-  return normalizeMediaHost(url).replace(/-\d{2,4}x\d{2,5}(?=\.(?:jpe?g|png|webp|gif)(?:\?|$))/i, '');
-}
-
+/** Stare adresy swiatczeka.pl/wp-content/... wskazują na nieistniejący już hosting; pliki leżą na czekaswiat.pl. */
 export function normalizeMediaHost(url: string) {
   return url.replace(/^https?:\/\/(?:www\.)?swiatczeka\.pl\/wp-content\//i, `${MEDIA_HOST}/wp-content/`);
 }
 
 export function imageSources(post: Pick<BlogPost, 'image'>) {
-  const src = originalImageUrl(post.image);
-  const fallback = normalizeMediaHost(post.image);
-  return { src, fallback: fallback !== src ? fallback : undefined };
+  return { src: normalizeMediaHost(post.image), fallback: undefined as string | undefined };
 }
 
 /** Wpis bez tekstu (same zdjęcia albo sam link do albumu) uznajemy za niedokończony. Wyjątek: osadzony film. */
@@ -50,14 +43,17 @@ export function metaTitle(post: BlogPost) {
   return (post.seoTitle || post.title).replace(/\s*\.{2,}\s*$/, '').replace(/\s+/g, ' ').trim();
 }
 
-/** Podmienia adresy miniatur i hostów mediów w starej treści HTML, żeby zdjęcia były ostre i działały po zmianie domeny. */
+/** Stara treść HTML: poprawia host mediów, leniwe ładowanie i prywatniejsze osadzanie YouTube. */
 export function rewriteLegacyHtml(html: string) {
+  const widths = [640, 828, 1080, 1200]; // muszą należeć do images.deviceSizes w Next
+  const optimized = (src: string, width: number) => `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=80`;
   return html
-    .replace(/<img\b([^>]*?)\bsrc="([^"]+)"([^>]*)>/gi, (_match, before: string, src: string, after: string) => {
-      const original = originalImageUrl(src);
-      const fallback = normalizeMediaHost(src);
-      const onerror = original !== fallback ? ` data-fb="${fallback}" onerror="this.onerror=null;this.removeAttribute('srcset');this.src=this.dataset.fb"` : '';
-      return `<img${before} src="${original}"${onerror}${after.replace(/\bsrcset="[^"]*"/i, '')} decoding="async">`;
+    .replace(/<img\b([^>]*?)\bsrc="([^"]+)"([^>]*)>/gi, (_m, before: string, rawSrc: string, after: string) => {
+      const src = normalizeMediaHost(rawSrc);
+      const rest = `${before}${after}`.replace(/\s+(?:srcset|sizes|decoding|loading)="[^"]*"/gi, '').replace(/\s*\/\s*$/, '');
+      if (!src.startsWith(`${MEDIA_HOST}/wp-content/`)) return `<img${rest} src="${src}" loading="lazy" decoding="async">`;
+      const srcset = widths.map((w) => `${optimized(src, w)} ${w}w`).join(', ');
+      return `<img${rest} src="${optimized(src, 1080)}" srcset="${srcset}" sizes="(max-width: 900px) 92vw, 780px" loading="lazy" decoding="async">`;
     })
     .replace(/<a\b([^>]*?)\bhref="(https?:\/\/(?:www\.)?swiatczeka\.pl\/wp-content\/[^"]+)"/gi, (_m, before: string, href: string) => `<a${before} href="${normalizeMediaHost(href)}"`)
     .replace(/<iframe\b([^>]*?)\bsrc="https?:\/\/www\.youtube\.com\/embed\//gi, '<iframe$1 src="https://www.youtube-nocookie.com/embed/')
@@ -87,3 +83,6 @@ export function htmlToText(html: string) {
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
+
+/** Adresy zajęte przez aplikację i stare podstrony. Wpis o takim adresie dostaje przyrostek. */
+export const RESERVED_SLUGS = new Set(['studio', 'mapa', 'api', 'kategoria', 'category', 'strona', 'wpis', 'sitemap', 'robots', 'klub', 'dokad-dalej', 'cookie-policy', 'nasze-podroze', 'vlog', 'portfolio-fotki', 'spotkania', 'azja', 'afryka', 'europa', 'australia', 'ameryka-polnocna', 'ameryka-poludniowa', 'australia-i-oceania', 'feed', 'tag', 'author', 'login']);

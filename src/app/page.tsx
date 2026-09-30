@@ -38,7 +38,7 @@ export default async function HomePage() {
             <p>Prawdziwe historie z drogi, spotkania i miejsca, do których chce się wracać.</p>
             <a className="hero-link" href="#historie">Odkrywaj historie <ArrowDown size={16} /></a>
           </div>
-          {featured && <Link className="hero-caption" href={`/wpis/${featured.slug}`}><span>Najnowsza opowieść</span><strong>{featured.title}</strong><ArrowUpRight size={18} /></Link>}
+          {featured && <Link className="hero-caption" href={`/${featured.slug}`}><span>Najnowsza opowieść</span><strong>{featured.title}</strong><ArrowUpRight size={18} /></Link>}
           <span className="hero-index">01 — {totalStories.toLocaleString('pl-PL')}</span>
         </section>
 
@@ -52,8 +52,8 @@ export default async function HomePage() {
           <span className="section-label">O tym blogu</span>
           <div>
             <h2 id="about-title">Prywatny dziennik <em>z drogi.</em></h2>
-            <p>Świat Czeka to blog podróżniczy Anki i przyjaciół. Od 2005 roku zapisujemy tu prawdziwe historie z wypraw: {totalStories.toLocaleString('pl-PL')} opowieści z {countries} krajów, od Azji po Amerykę Południową. Bez wielkich planów i katalogowych zdjęć, za to z drogą, ludźmi i jedzeniem, które zapamiętaliśmy.</p>
-            <p>Szukasz konkretnego kraju? Kliknij go na mapie poniżej albo przejrzyj archiwum, posortuj je po dacie i wybierz miejsce.</p>
+            <p>Świat czeka! Ty decydujesz! Rozbijamy stereotypy podróży i pokazujemy, że podróżowanie z Polski do egzotycznych miejsc jest bardziej dostępne, niż się wydaje. Od 2005 roku zapisujemy tu prawdziwe historie z drogi: {totalStories.toLocaleString('pl-PL')} opowieści z {countries} krajów.</p>
+            <p>Szukasz konkretnego kraju? Kliknij go na mapie poniżej albo przejrzyj archiwum. <Link className="text-link" href="/klub">Poznaj nas <span aria-hidden="true">↗</span></Link></p>
           </div>
         </section>
 

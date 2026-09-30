@@ -5,9 +5,10 @@ import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { SmartImage } from '@/components/smart-image';
+import { PageView } from '@/components/page-view';
 import { PostCard, formatDate } from '@/components/post-card';
 import { imageSources, metaDescription, metaTitle, plainText, rewriteLegacyHtml, slugify } from '@/lib/legacy';
-import { getAdjacentPosts, getPostBySlug, getRelatedPosts, toPreview } from '@/lib/posts';
+import { getAdjacentPosts, getPageBySlug, getPostBySlug, getRelatedPosts, toPreview } from '@/lib/posts';
 import type { BlogPost } from '@/lib/types';
 
 export const revalidate = 60;
@@ -15,15 +16,21 @@ export const revalidate = 60;
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getPostBySlug((await params).slug);
-  if (!post) return {};
+  const slug = (await params).slug;
+  const post = await getPostBySlug(slug);
+  if (!post) {
+    const page = await getPageBySlug(slug);
+    if (!page) return {};
+    const description = page.excerpt || metaDescription(page);
+    return { title: page.title, description, alternates: { canonical: `/${page.slug}` }, openGraph: { title: page.title, description, url: `/${page.slug}` } };
+  }
   const { src } = imageSources(post);
   const description = metaDescription(post);
   return {
     title: metaTitle(post),
     description,
-    alternates: { canonical: `/wpis/${post.slug}` },
-    openGraph: { type: 'article', title: metaTitle(post), description, url: `/wpis/${post.slug}`, publishedTime: post.date, modifiedTime: post.modified, authors: [post.author], images: src ? [src] : [] },
+    alternates: { canonical: `/${post.slug}` },
+    openGraph: { type: 'article', title: metaTitle(post), description, url: `/${post.slug}`, publishedTime: post.date, modifiedTime: post.modified, authors: [post.author], images: src ? [src] : [] },
     twitter: { card: 'summary_large_image', title: metaTitle(post), description, images: src ? [src] : [] },
   };
 }
@@ -64,7 +71,11 @@ function TextBody({ post }: { post: BlogPost }) {
 export default async function StoryPage({ params }: Props) {
   const slug = (await params).slug;
   const post = await getPostBySlug(slug);
-  if (!post) notFound();
+  if (!post) {
+    const page = await getPageBySlug(slug);
+    if (!page) notFound();
+    return <><SiteHeader /><PageView page={page} /><SiteFooter /></>;
+  }
   const [{ newer, older }, related] = await Promise.all([getAdjacentPosts(slug), getRelatedPosts(post)]);
   const text = post.format === 'text' || post.id.startsWith('new-');
   const cover = imageSources(post);
@@ -80,7 +91,7 @@ export default async function StoryPage({ params }: Props) {
     image: cover.src ? [cover.src] : undefined,
     author: { '@type': 'Person', name: post.author },
     publisher: { '@type': 'Organization', name: 'Świat Czeka', url: 'https://swiatczeka.pl' },
-    mainEntityOfPage: `https://swiatczeka.pl/wpis/${post.slug}`,
+    mainEntityOfPage: `https://swiatczeka.pl/${post.slug}`,
     inLanguage: 'pl-PL',
     keywords: post.categories.map((category) => category.name).join(', '),
   };
@@ -112,7 +123,7 @@ export default async function StoryPage({ params }: Props) {
         </div>
         <nav className="story-pager" aria-label="Poprzedni i następny wpis">
           {[{ post: older, dir: 'prev' as const }, { post: newer, dir: 'next' as const }].map(({ post: item, dir }) => item ? (
-            <Link key={dir} href={`/wpis/${item.slug}`} rel={dir} className={`pager-card pager-${dir}`}>
+            <Link key={dir} href={`/${item.slug}`} rel={dir} className={`pager-card pager-${dir}`}>
               {item.image && <span className="pager-thumb"><SmartImage src={imageSources(item).src} fallback={imageSources(item).fallback} alt="" fill sizes="72px" quality={70} /></span>}
               <span className="pager-copy"><small>{dir === 'prev' ? <><ArrowLeft size={13} /> Starszy wpis</> : <>Nowszy wpis <ArrowRight size={13} /></>}</small><strong>{item.title}</strong></span>
             </Link>

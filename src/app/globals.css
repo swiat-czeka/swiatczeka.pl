@@ -627,3 +627,26 @@ img { max-width: 100%; }
   .pager-next .pager-copy small { justify-content: flex-start; }
   .map-picker ul { grid-template-columns: 1fr 1fr; gap: 0 12px; max-height: 280px; }
 }
+
+/* --- Podstrony, stopka, kontakt --- */
+.page-html h2 { margin: 0 0 18px; font-family: var(--font-display); font-size: clamp(1.8rem, 2vw + 1rem, 2.6rem); font-weight: 400; line-height: 1.15; }
+.page-html ul, .page-html ol { padding-left: 1.2em; }
+.page-html li { margin-bottom: 10px; font-size: .92em; line-height: 1.7; }
+.page-html p { font-size: .92em; }
+.page-html a { color: var(--coral); text-decoration: underline; text-underline-offset: 3px; }
+.contact-card { margin-top: 44px; padding: 26px; border: 1px solid var(--line); border-top: 3px solid var(--green); background: var(--white); font-family: var(--font-body); }
+.contact-card h2 { margin: 0 0 14px; font-family: var(--font-display); font-size: 1.6rem; font-weight: 400; }
+.contact-card p { margin: 0 0 8px; font-size: 16px; }
+.contact-card a { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; }
+.contact-card a:hover { color: var(--coral); }
+.page-posts { margin-top: 56px; font-family: var(--font-body); }
+.page-posts h2 { margin: 0 0 24px; font-family: var(--font-display); font-size: 1.8rem; font-weight: 400; }
+.page-posts .post-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.footer-contact { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 15px; }
+.footer-contact > a { min-height: 32px; display: inline-flex; align-items: center; }
+.footer-contact > a:hover { color: var(--coral); }
+.footer-bottom nav { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.footer-bottom nav a:hover { color: var(--coral); }
+.footer-bottom { align-items: flex-start; }
+.landing-heading { min-height: 240px; padding-top: 70px; padding-bottom: 40px; }
+.legacy-content img { max-width: 100%; height: auto; }

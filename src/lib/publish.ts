@@ -2,7 +2,7 @@ import { put } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth';
-import { slugify } from '@/lib/legacy';
+import { RESERVED_SLUGS, slugify } from '@/lib/legacy';
 import { getAllPosts, getCategoryCounts } from '@/lib/posts';
 import type { BlogPost, PostStatus } from '@/lib/types';
 
@@ -28,7 +28,7 @@ export async function savePost(post: BlogPost, collection: 'posts' | 'pages') {
   revalidatePath('/');
   revalidatePath('/mapa');
   revalidatePath('/sitemap.xml');
-  revalidatePath(collection === 'pages' ? `/strona/${post.slug}` : `/wpis/${post.slug}`);
+  revalidatePath(`/${post.slug}`);
   for (const category of post.categories) revalidatePath(`/kategoria/${category.slug}`);
 }
 
@@ -46,7 +46,7 @@ export async function publishDocument(request: Request, collection: 'posts' | 'p
   let slug = slugify(isString(input.slug) && input.slug.trim() ? input.slug : input.title);
   if (!slug) return NextResponse.json({ error: 'Nie udało się przygotować adresu.' }, { status: 400 });
   if (!overwrite) {
-    const taken = new Set((await getAllPosts()).map((post) => post.slug));
+    const taken = new Set([...(await getAllPosts()).map((post) => post.slug), ...RESERVED_SLUGS]);
     const base = slug.slice(0, 74);
     for (let n = 2; taken.has(slug); n += 1) slug = `${base}-${n}`;
   }

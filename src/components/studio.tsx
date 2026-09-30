@@ -248,7 +248,7 @@ export function Studio({ authenticated, drafts, totals, config }: {
   if (!authenticated) {
     return (
       <main className="studio-login">
-        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.png" width={2576} height={903} alt="Świat Czeka" /></Link>
+        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.png" width={2576} height={903} alt="Świat Czeka" sizes="200px" /></Link>
         <div className="login-panel"><span className="section-label">Panel administratora</span><h1>Witaj <em>w domu.</em></h1><p>To miejsce jest tylko dla autorki bloga.</p>
           <form onSubmit={login}>
             <label htmlFor="email">E-mail</label><input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="username" required />
@@ -268,7 +268,7 @@ export function Studio({ authenticated, drafts, totals, config }: {
   return (
     <main className="studio-shell">
       <header className="studio-header">
-        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.png" width={2576} height={903} alt="Świat Czeka" /></Link>
+        <Link className="studio-brand" href="/" aria-label="Świat Czeka — strona główna"><Image src="/swiatczeka-logo.png" width={2576} height={903} alt="Świat Czeka" sizes="200px" /></Link>
         <nav className="studio-tabs" aria-label="Panel">
           <button className={tab === 'overview' ? 'tab-active' : ''} onClick={() => setTab('overview')}><BarChart3 size={16} /> Przegląd</button>
           <button className={tab === 'new' ? 'tab-active' : ''} onClick={() => (tab === 'new' ? undefined : newPost())}><Mic size={16} /> Nowy wpis</button>
@@ -312,7 +312,7 @@ export function Studio({ authenticated, drafts, totals, config }: {
 
             <section className="studio-panel" aria-labelledby="yt-title">
               <h2 id="yt-title">Vlog z YouTube</h2>
-              <p className="studio-hint">{config.youtube ? 'Nowe filmy z Twojego kanału trafiają na bloga automatycznie raz dziennie (kategoria „Filmy”). Możesz też pobrać je od razu.' : 'Ustaw w Vercel zmienną YOUTUBE_CHANNEL_ID (ID kanału zaczyna się od „UC”, znajdziesz je w YouTube Studio → Ustawienia → Kanał → Zaawansowane) oraz CRON_SECRET (dowolny długi losowy ciąg).'}</p>
+              <p className="studio-hint">Nowe filmy z kanału „Czeka Świat” trafiają na bloga automatycznie raz dziennie (kategoria „Filmy”). Możesz też pobrać je od razu.</p>
               <button className="studio-secondary" onClick={syncYoutube} disabled={busy || !config.youtube}><RefreshCw size={15} /> Pobierz nowe filmy teraz</button>
             </section>
           </>
@@ -341,7 +341,7 @@ export function Studio({ authenticated, drafts, totals, config }: {
                 <div className="studio-block-title"><span>03</span><div><h2>Twój wpis</h2><p>Przejrzyj, popraw, opublikuj.</p></div></div>
                 <form className="draft-form" onSubmit={(event) => { event.preventDefault(); void save('published'); }}>
                   <label className="field-label" htmlFor="draft-title">Tytuł</label><input id="draft-title" className="draft-title" value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value, slug: slugTouched ? draft.slug : slugify(event.target.value) })} placeholder="Nadaj tej chwili tytuł" required />
-                  <label className="field-label" htmlFor="draft-slug">Adres wpisu <span>swiatczeka.pl/{documentType === 'page' ? 'strona' : 'wpis'}/{draft.slug || '…'}</span></label><input id="draft-slug" className="draft-categories" value={draft.slug} disabled={Boolean(editing || saved)} onChange={(event) => { setSlugTouched(true); setDraft({ ...draft, slug: slugify(event.target.value) }); }} placeholder="sylwester-na-filipinach" />
+                  <label className="field-label" htmlFor="draft-slug">Adres wpisu <span>swiatczeka.pl/{draft.slug || '…'}</span></label><input id="draft-slug" className="draft-categories" value={draft.slug} disabled={Boolean(editing || saved)} onChange={(event) => { setSlugTouched(true); setDraft({ ...draft, slug: slugify(event.target.value) }); }} placeholder="sylwester-na-filipinach" />
                   <label className="field-label" htmlFor="draft-excerpt">Krótki wstęp</label><textarea id="draft-excerpt" className="draft-excerpt" value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} placeholder="Jedno zdanie, które wciągnie w opowieść" />
                   <label className="field-label" htmlFor="draft-seo">Opis w Google <span>{draft.seoDescription.length}/155</span></label><textarea id="draft-seo" className="draft-excerpt" maxLength={170} value={draft.seoDescription} onChange={(event) => setDraft({ ...draft, seoDescription: event.target.value })} placeholder="Zostanie ustawiony automatycznie z początku tekstu, jeśli zostawisz puste" />
                   <label className="field-label" htmlFor="draft-content">Treść <span>nagłówki zaczynaj od „## ”</span></label><textarea id="draft-content" className="draft-content" value={draft.content} onChange={(event) => setDraft({ ...draft, content: event.target.value })} placeholder="Tu pojawi się Twoja opowieść. Możesz ją dowolnie poprawić." required />
@@ -355,7 +355,7 @@ export function Studio({ authenticated, drafts, totals, config }: {
                     </div>
                   </div>
                 </form>
-                {saved?.status === 'published' && <Link className="published-link" href={saved.type === 'page' ? `/strona/${saved.slug}` : `/wpis/${saved.slug}`}>Zobacz na blogu <ArrowUpRight size={15} /></Link>}
+                {saved?.status === 'published' && <Link className="published-link" href={`/${saved.slug}`}>Zobacz na blogu <ArrowUpRight size={15} /></Link>}
               </section>
             </div>
           </>

@@ -1,15 +1,15 @@
 import { XMLParser } from 'fast-xml-parser';
 import { getAllPosts } from '@/lib/posts';
 import { savePost } from '@/lib/publish';
-import { slugify } from '@/lib/legacy';
+import { RESERVED_SLUGS, slugify } from '@/lib/legacy';
+import { YOUTUBE_CHANNEL_ID } from '@/lib/site';
 import type { BlogPost } from '@/lib/types';
 
 type Entry = { 'yt:videoId': string; title: string; published: string; 'media:group'?: { 'media:description'?: string; 'media:thumbnail'?: { '@_url': string } } };
 
 /** Pobiera publiczny kanał RSS YouTube (bez klucza API) i dodaje nowe filmy jako wpisy w kategorii „Filmy”. */
 export async function syncYoutube() {
-  const channelId = process.env.YOUTUBE_CHANNEL_ID;
-  if (!channelId) return { ok: false as const, error: 'Ustaw YOUTUBE_CHANNEL_ID w Vercel (identyfikator kanału zaczyna się od „UC”).' };
+  const channelId = process.env.YOUTUBE_CHANNEL_ID || YOUTUBE_CHANNEL_ID;
   const response = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`, { cache: 'no-store' });
   if (!response.ok) return { ok: false as const, error: `YouTube zwrócił błąd ${response.status}.` };
   const parsed = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' }).parse(await response.text());
@@ -18,7 +18,7 @@ export async function syncYoutube() {
 
   const posts = await getAllPosts();
   const known = new Set(posts.map((post) => post.youtubeId).filter(Boolean));
-  const slugs = new Set(posts.map((post) => post.slug));
+  const slugs = new Set([...posts.map((post) => post.slug), ...RESERVED_SLUGS]);
   const added: string[] = [];
   for (const entry of entries) {
     const id = String(entry['yt:videoId']);

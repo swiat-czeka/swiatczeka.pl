@@ -8,6 +8,8 @@ export const maxDuration = 60;
 async function authorized(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (secret && request.headers.get('authorization') === `Bearer ${secret}`) return true;
+  // Zapytania crona Vercela (synchronizacja publicznego RSS jest bezpieczna i idempotentna).
+  if (request.headers.get('user-agent')?.startsWith('vercel-cron/')) return true;
   return isAdmin();
 }
 

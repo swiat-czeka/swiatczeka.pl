@@ -1,5 +1,6 @@
 import { list } from '@vercel/blob';
 import { cache } from 'react';
+import legacyPages from '@/data/legacy-pages.json';
 import legacyPosts from '@/data/legacy-posts.json';
 import { imageSources, isIncomplete } from '@/lib/legacy';
 import type { BlogPost, PostPreview } from '@/lib/types';
@@ -58,8 +59,14 @@ export async function getDrafts() {
   return (await getAllPosts()).filter((post) => post.status === 'draft');
 }
 
+/** Strony: utworzone w studiu (Blob) oraz zaimportowane podstrony WordPressa (O nas, Dokąd dalej?, polityka cookies). */
 export const getPages = cache(async function getPages() {
-  return getBlobDocuments('pages/');
+  const live = await getBlobDocuments('pages/');
+  const liveSlugs = new Set(live.map((page) => page.slug));
+  const imported: BlogPost[] = legacyPages
+    .filter((page) => !liveSlugs.has(page.slug))
+    .map((page) => ({ id: `page-${page.slug}`, slug: page.slug, title: page.title, date: '2026-09-27T00:00:00.000Z', author: 'Anka', excerpt: '', content: page.content, format: 'html', image: '', imageAlt: page.title, categories: [], tags: [] }));
+  return [...live, ...imported];
 });
 
 export function toPreview(post: BlogPost): PostPreview {

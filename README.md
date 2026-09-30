@@ -17,7 +17,7 @@ Eksport można przetworzyć ponownie poleceniem `npm run import:wordpress`. Impo
 
 1. Zaimportuj repozytorium `swiat-czeka/swiatczeka.pl` do Vercel (Next.js, ustawienia domyślne).
 2. W Storage dodaj **Blob** (daje `BLOB_READ_WRITE_TOKEN`) (statystyki odwiedzin: włącz Analytics w projekcie).
-3. W Settings → Environment Variables dodaj `ANTHROPIC_API_KEY`. Opcjonalnie `YOUTUBE_CHANNEL_ID` i `CRON_SECRET` (wpisy z YouTube), `SESSION_SECRET`.
+3. W Settings → Environment Variables dodaj `ANTHROPIC_API_KEY`. Dodaj też `SESSION_SECRET` (min. 32 losowe znaki). Kanał YouTube „Czeka Świat” jest wpisany w `src/lib/site.ts`, więc nic więcej nie trzeba.
 4. Zrób redeploy, a domenę `swiatczeka.pl` podepnij na samym końcu.
 
 ## Panel administratora
@@ -31,3 +31,10 @@ Wpisy z archiwum WordPressa bez tekstu i bez zdjęć (np. sam link do albumu Pic
 `/mapa` i sekcja na stronie głównej: szara mapa świata, kraje z wpisami zapalają się na zielono i prowadzą do wpisów z danego kraju. Mapowanie kraj → kategoria jest w `src/lib/countries.ts`.
 
 Zdjęcia i pliki medialne z archiwum pozostały pod adresami `czekaswiat.pl`, ponieważ eksport WXR nie zawiera samych plików. Oryginalny hosting mediów musi pozostać dostępny, dopóki te zasoby nie zostaną skopiowane do nowego magazynu.
+
+## Migracja ze starego WordPressa
+
+- Adresy wpisów są takie jak w WordPressie (`/slug`), a stare adresy mają przekierowania w `next.config.ts` (`/category/...`, `/vlog`, `/portfolio-fotki`, `/nasze-podroze`, regiony).
+- `npm run import:pages` pobiera z `czekaswiat.pl` podstrony (O nas, Dokąd dalej?, polityka cookies).
+- `npm run fix:media` zamienia stare adresy zdjęć na istniejące pliki z biblioteki mediów WordPressa.
+- Zdjęcia są nadal serwowane z `czekaswiat.pl`, więc ten hosting musi działać.

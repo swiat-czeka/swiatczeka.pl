@@ -28,7 +28,7 @@ export default async function StudioPage() {
       authenticated
       drafts={drafts}
       totals={{ published: posts.length - drafts.length, drafts: drafts.length }}
-      config={{ ai: Boolean(process.env.ANTHROPIC_API_KEY), blob: Boolean(process.env.BLOB_READ_WRITE_TOKEN), youtube: Boolean(process.env.YOUTUBE_CHANNEL_ID) }}
+      config={{ ai: Boolean(process.env.ANTHROPIC_API_KEY), blob: Boolean(process.env.BLOB_READ_WRITE_TOKEN), youtube: true }}
     />
   );
 }

@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "import:pages": "node scripts/import-pages.mjs",
+    "fix:media": "node scripts/fix-legacy-media.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",
