@@ -5,7 +5,7 @@ import { SmartImage } from '@/components/smart-image';
 import { SocialLinks } from '@/components/social-links';
 import { imageSources, rewriteLegacyHtml } from '@/lib/legacy';
 import { getArchivePage } from '@/lib/posts';
-import { contact } from '@/lib/site';
+import { contact, people } from '@/lib/site';
 import type { BlogPost } from '@/lib/types';
 
 /** Strona statyczna: zaimportowana z WordPressa (HTML) albo utworzona w studiu (tekst z `## nagłówkami`). */
@@ -25,6 +25,20 @@ export async function PageView({ page }: { page: BlogPost }) {
         {html
           ? <div dangerouslySetInnerHTML={{ __html: rewriteLegacyHtml(page.content) }} />
           : page.content.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => paragraph.startsWith('## ') ? <h2 key={index}>{paragraph.slice(3)}</h2> : <p key={index}>{paragraph}</p>)}
+        {page.slug === 'klub' && (
+          <section className="people" aria-labelledby="people-title">
+            <h2 id="people-title">Kim jesteśmy</h2>
+            <div className="people-grid">
+              {people.map((person) => (
+                <article key={person.name} className="person-card">
+                  <div className="person-photo"><SmartImage src={person.photo} alt={`${person.name}, zdjęcie`} fill sizes="(max-width: 620px) 70vw, 220px" quality={80} /></div>
+                  <h3>{person.name}</h3>
+                  {person.text.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
         {page.slug === 'klub' && (
           <div className="contact-card">
             <h2>Napisz lub zadzwoń</h2>

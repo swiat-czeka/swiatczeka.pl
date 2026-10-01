@@ -57,7 +57,8 @@ export function rewriteLegacyHtml(html: string) {
     })
     .replace(/<a\b([^>]*?)\bhref="(https?:\/\/(?:www\.)?swiatczeka\.pl\/wp-content\/[^"]+)"/gi, (_m, before: string, href: string) => `<a${before} href="${normalizeMediaHost(href)}"`)
     .replace(/<iframe\b([^>]*?)\bsrc="https?:\/\/www\.youtube\.com\/embed\//gi, '<iframe$1 src="https://www.youtube-nocookie.com/embed/')
-    .replace(/<iframe\b/gi, '<iframe loading="lazy"');
+    .replace(/<iframe\b/gi, '<iframe loading="lazy"')
+    .replace(/<a\b(?![^>]*\btarget=)([^>]*?)\bhref="(https?:\/\/(?!(?:www\.)?(?:czekaswiat|swiatczeka)\.pl)[^"]+)"/gi, '<a$1 href="$2" target="_blank"');
 }
 
 export function slugify(value: string) {

@@ -1,8 +1,9 @@
 import { XMLParser } from 'fast-xml-parser';
 import videoData from '@/data/videos.json';
-import { YOUTUBE_CHANNEL_ID } from '@/lib/site';
+import { FEATURED_VIDEO_ID, YOUTUBE_CHANNEL_ID } from '@/lib/site';
 
-export type Video = { id: string; title: string; description?: string; date?: string; duration?: string };
+export type Video = { id: string; title: string; description?: string; date?: string; duration?: string; views?: number };
+export type FeaturedVideo = { label: string; video: Video };
 
 /** Z opisu filmu z YouTube robi krótki, czytelny skrót: bez linków, hasztagów, znaczników czasu i stopek typu „Subskrybuj”. */
 export function summarizeDescription(raw: string | undefined, title = '') {
@@ -69,10 +70,42 @@ export async function getVideos(): Promise<Video[]> {
   const channelId = process.env.YOUTUBE_CHANNEL_ID || YOUTUBE_CHANNEL_ID;
   const latest = await fromFeed(channelId);
   const known = new Set(latest.map((video) => video.id));
-  const merged = [...latest, ...videoData.videos.filter((video) => !known.has(video.id))] as Video[];
+  const archive = videoData.videos as Video[];
+  const views = new Map(archive.map((video) => [video.id, video.views]));
+  const merged: Video[] = [...latest.map((video) => ({ ...video, views: views.get(video.id) })), ...archive.filter((video) => !known.has(video.id))];
   const key = process.env.YOUTUBE_API_KEY;
   if (!key) return merged;
   const details = await fromApi(merged.map((video) => video.id), key);
   const enriched = merged.map((video) => ({ ...video, ...Object.fromEntries(Object.entries(details.get(video.id) ?? {}).filter(([, value]) => value)) }) as Video);
   return enriched.every((video) => video.date) ? enriched.sort((a, b) => Date.parse(b.date!) - Date.parse(a.date!)) : enriched;
+}
+
+/** Zwiastun kanału: na żywo ze strony kanału (zmienia się, gdy autorka zmieni go w YouTube), a gdy się nie uda, z ostatniego importu. */
+async function currentTrailerId(channelId: string) {
+  try {
+    const response = await fetch(`https://www.youtube.com/channel/${channelId}?hl=pl`, { next: { revalidate: 21600 }, headers: { 'user-agent': 'Mozilla/5.0', 'accept-language': 'pl-PL,pl;q=0.9' } });
+    const data = (await response.text()).match(/var ytInitialData = (\{[\s\S]*?\});<\/script>/)?.[1];
+    const id = data && JSON.stringify(JSON.parse(data)).match(/"channelVideoPlayerRenderer":\{"videoId":"([\w-]{11})"/)?.[1];
+    if (id) return id;
+  } catch { /* użyj zapisanego */ }
+  return (videoData as { trailerId?: string }).trailerId;
+}
+
+/** Trzy wyróżnione filmy na górze strony: zwiastun kanału, film polecany i najczęściej oglądany. */
+export async function getFeaturedVideos(videos: Video[]): Promise<FeaturedVideo[]> {
+  const channelId = process.env.YOUTUBE_CHANNEL_ID || YOUTUBE_CHANNEL_ID;
+  const byId = new Map(videos.map((video) => [video.id, video]));
+  const used = new Set<string>();
+  const result: FeaturedVideo[] = [];
+  const add = (label: string, id: string | undefined, fallbackTitle?: string) => {
+    if (!id || used.has(id)) return;
+    const video = byId.get(id) ?? (fallbackTitle ? { id, title: fallbackTitle } : undefined);
+    if (!video) return;
+    used.add(id);
+    result.push({ label, video });
+  };
+  add('Zwiastun kanału', await currentTrailerId(channelId), 'Zwiastun kanału Czeka Świat');
+  add('Polecany film', process.env.FEATURED_VIDEO_ID || FEATURED_VIDEO_ID);
+  add('Najczęściej oglądany', [...videos].filter((video) => !used.has(video.id)).sort((a, b) => (b.views ?? 0) - (a.views ?? 0))[0]?.id);
+  return result;
 }
