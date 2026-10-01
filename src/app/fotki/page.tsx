@@ -22,7 +22,7 @@ export default function PhotosPage() {
       <main className="albums-page" id="top">
         <p className="section-label">Portfolio</p>
         <h1>Fotki z <em>drogi.</em></h1>
-        <p className="category-intro">{albums.length} albumów ze zdjęciami z naszych wypraw. Przy części znajdziesz też link do pełnego albumu w Google Photos.</p>
+        <p className="category-intro">{albums.length} albumów ze zdjęciami z naszych wypraw. Przy części znajdziesz link do pełnego albumu w Google Photos.</p>
         <div className="album-grid">
           {albums.map((album, index) => {
             const onSite = album.photos.length > 0;
@@ -30,7 +30,7 @@ export default function PhotosPage() {
               <>
                 <span className="album-cover">
                   {album.cover && <SmartImage src={album.cover} alt="" fill sizes="(max-width: 620px) 92vw, (max-width: 1100px) 46vw, 30vw" quality={75} loading={index < 6 ? 'eager' : 'lazy'} />}
-                  <span className="album-badge">{onSite ? <><Images size={14} /> {album.photos.length + 1} zdjęć</> : <><ExternalLink size={14} /> Google Photos</>}</span>
+                  <span className="album-badge">{album.source === 'google' ? <><ExternalLink size={14} /> Google Photos</> : onSite ? <><Images size={14} /> {album.photos.length + 1} zdjęć</> : <><ExternalLink size={14} /> Google Photos</>}</span>
                 </span>
                 <span className="album-title">{album.title}</span>
                 <span className="album-date">{formatDate(album.date)}</span>

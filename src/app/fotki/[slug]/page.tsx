@@ -35,7 +35,7 @@ export default async function AlbumPage({ params }: Props) {
         <Link className="back-link" href="/fotki"><ArrowLeft size={16} /> Wszystkie albumy</Link>
         <p className="section-label">{new Intl.DateTimeFormat('pl-PL', { year: 'numeric', month: 'long' }).format(new Date(album.date))}</p>
         <h1>{album.title}</h1>
-        {album.google && <a className="hero-link" href={album.google} target="_blank" rel="noopener noreferrer">Pełny album w Google Photos <ExternalLink size={16} /></a>}
+        {album.google && <a className="hero-link" href={album.google} target="_blank" rel="noopener noreferrer">{album.source === 'google' ? 'Zobacz wszystkie zdjęcia w Google Photos' : 'Pełny album w Google Photos'} <ExternalLink size={16} /></a>}
         <div className="photo-wall">
           {photos.map((url, index) => (
             <a key={url} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Zdjęcie ${index + 1} w pełnym rozmiarze`}>
