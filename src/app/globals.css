@@ -862,3 +862,5 @@ body { transition: background-color .25s ease, color .25s ease; }
 @media (max-width: 900px) { .albums-page, .album-page, .podcast-page { padding: 32px 5% 70px; } }
 @media (max-width: 760px) { .podcast-grid { grid-template-columns: 1fr; } .photo-wall { columns: 2 140px; } }
 @media (max-width: 620px) { .album-grid { grid-template-columns: 1fr; } .video-featured-row { padding: 16px; } }
+.photo-wall a { position: relative; }
+.photo-video-badge { position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; background: var(--deep); color: var(--on-deep); font-size: 12px; font-weight: 600; }

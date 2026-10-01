@@ -1,5 +1,5 @@
 // Dodaje na stronę „Fotki” udostępnione albumy Google Photos z pliku scripts/google-album-links.txt:
-// okładka albumu, tytuł albumu i 10 pierwszych zdjęć. Zdjęcia są zapisywane w public/albums/<album>/ (kopie 1600 px),
+// okładka albumu, tytuł albumu i 10 pierwszych pozycji (zdjęcia i filmy). Zdjęcia i klatki filmów są zapisywane w public/albums/<album>/ (kopie 1600 px),
 // dzięki czemu strona nie zależy od tego, czy album w Google nadal jest udostępniony.
 // Uruchom: npm run import:google-albums
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -24,20 +24,23 @@ const existing = JSON.parse(await readFile('src/data/albums.json', 'utf8')).map(
 const albums = [];
 
 for (const link of links) {
-  const html = await (await fetch(link, { headers, redirect: 'follow' })).text();
+  const response0 = await fetch(link, { headers, redirect: 'follow' });
+  const html = await response0.text();
+  const shareUrl = new URL(response0.url);
+  const albumId = shareUrl.pathname.split('/').pop();
+  const shareKey = shareUrl.searchParams.get('key');
   const ogTitle = decode(html.match(/property="og:title" content="([^"]*)"/)?.[1] ?? '');
   const [rawTitle, ...rest] = ogTitle.split(' · ');
   const title = rawTitle.replace(/[\u{1F000}-\u{1FFFF}☀-➿]/gu, '').trim();
   const cover = html.match(/property="og:image" content="([^"]+)"/)?.[1]?.split('=')[0];
   if (!title || !cover) { console.warn(`Pominięto (nie da się odczytać albumu): ${link}`); continue; }
 
-  // Pozycje albumu w kolejności; filmy mają w metadanych klucz "76647426" (czas trwania) i ikonę odtwarzania na miniaturze.
-  const matches = [...html.matchAll(/\["AF1Qip[\w-]+",\["(https:\/\/lh3\.googleusercontent\.com\/pw\/[\w-]+)",\d+,\d+/g)];
-  const entries = matches.map((match, index) => ({ url: match[1], video: html.slice(match.index, matches[index + 1]?.index ?? match.index + 4000).includes('"76647426"') }));
-  const stills = [...new Map(entries.filter((entry) => !entry.video).map((entry) => [entry.url, entry.url])).values()];
-  const coverIsStill = stills.includes(cover);
-  const coverUrl = coverIsStill ? cover : stills[0];
-  const photos = stills.filter((url) => url !== coverUrl).slice(0, PHOTOS_PER_ALBUM);
+  // Pozycje albumu w kolejności. Filmy mają w metadanych klucz "76647426" (czas trwania); ich klatka ma ikonę odtwarzania.
+  const matches = [...html.matchAll(/\["(AF1Qip[\w-]+)",\["(https:\/\/lh3\.googleusercontent\.com\/pw\/[\w-]+)",\d+,\d+/g)];
+  const entries = [...new Map(matches.map((match, index) => [match[2], { id: match[1], url: match[2], video: html.slice(match.index, matches[index + 1]?.index ?? match.index + 4000).includes('"76647426"') }])).values()];
+  const coverEntry = entries.find((entry) => entry.url === cover && !entry.video) ?? entries.find((entry) => !entry.video);
+  const coverUrl = coverEntry?.url;
+  const picked = entries.filter((entry) => entry.url !== coverUrl).slice(0, PHOTOS_PER_ALBUM);
   if (!coverUrl) { console.warn(`Pominięto (album bez zdjęć): ${link}`); continue; }
 
   let slug = slugify(title);
@@ -50,11 +53,14 @@ for (const link of links) {
     return `/albums/${slug}/${name}.jpg`;
   };
   const savedCover = await save(coverUrl, 'cover');
-  const saved = [];
-  for (const [index, url] of photos.entries()) saved.push(await save(url, String(index + 1).padStart(2, '0')));
+  const media = [];
+  for (const [index, entry] of picked.entries()) {
+    const src = await save(entry.url, String(index + 1).padStart(2, '0'));
+    media.push(entry.video ? { src, video: true, href: `https://photos.google.com/share/${albumId}/photo/${entry.id}?key=${shareKey}` } : { src });
+  }
 
-  albums.push({ slug, title, date: parseDate(rest.join(' · ')) ?? new Date().toISOString(), cover: savedCover, photos: saved, google: link, source: 'google' });
-  console.log(`${title}: okładka + ${saved.length} zdjęć`);
+  albums.push({ slug, title, date: parseDate(rest.join(' · ')) ?? new Date().toISOString(), cover: savedCover, photos: media.map((item) => item.src), media, google: link, source: 'google' });
+  console.log(`${title}: okładka + ${media.length} pozycji (w tym ${media.filter((item) => item.video).length} filmów)`);
 }
 
 await writeFile('src/data/google-albums.json', `${JSON.stringify(albums, null, 1)}\n`);

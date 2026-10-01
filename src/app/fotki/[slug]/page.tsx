@@ -5,7 +5,7 @@ import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { SmartImage } from '@/components/smart-image';
-import { getAlbum, getAlbums } from '@/lib/albums';
+import { getAlbum, getAlbums, type AlbumMedia } from '@/lib/albums';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!album) return {};
   return {
     title: album.title,
-    description: `Zdjęcia z albumu „${album.title}”: ${album.photos.length + 1} fotografii z naszej podróży.`,
+    description: `Zdjęcia z albumu „${album.title}”: ${album.photos.length + 1} pozycji z naszej podróży.`,
     alternates: { canonical: `/fotki/${album.slug}` },
     openGraph: { title: album.title, images: album.cover ? [album.cover] : [] },
   };
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AlbumPage({ params }: Props) {
   const album = getAlbum((await params).slug);
   if (!album) notFound();
-  const photos = [album.cover, ...album.photos].filter(Boolean);
+  const items: AlbumMedia[] = [album.cover, ...(album.media ?? album.photos.map((src) => ({ src })))].map((item) => (typeof item === 'string' ? { src: item } : item)).filter((item) => item.src);
   return (
     <>
       <SiteHeader />
@@ -37,9 +37,10 @@ export default async function AlbumPage({ params }: Props) {
         <h1>{album.title}</h1>
         {album.google && <a className="hero-link" href={album.google} target="_blank" rel="noopener noreferrer">{album.source === 'google' ? 'Zobacz wszystkie zdjęcia w Google Photos' : 'Pełny album w Google Photos'} <ExternalLink size={16} /></a>}
         <div className="photo-wall">
-          {photos.map((url, index) => (
-            <a key={url} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Zdjęcie ${index + 1} w pełnym rozmiarze`}>
-              <SmartImage src={url} alt={`${album.title}, zdjęcie ${index + 1}`} width={900} height={675} sizes="(max-width: 620px) 92vw, (max-width: 1100px) 46vw, 30vw" quality={75} loading={index < 4 ? 'eager' : 'lazy'} />
+          {items.map((item, index) => (
+            <a key={item.src} href={item.video && item.href ? item.href : item.src} target="_blank" rel="noopener noreferrer" aria-label={item.video ? `Film ${index + 1}: otwórz w Google Photos` : `Zdjęcie ${index + 1} w pełnym rozmiarze`}>
+              <SmartImage src={item.src} alt={`${album.title}, ${item.video ? 'film' : 'zdjęcie'} ${index + 1}`} width={900} height={675} sizes="(max-width: 620px) 92vw, (max-width: 1100px) 46vw, 30vw" quality={75} loading={index < 4 ? 'eager' : 'lazy'} />
+              {item.video && <span className="photo-video-badge">Film · otwórz w Google Photos</span>}
             </a>
           ))}
         </div>
