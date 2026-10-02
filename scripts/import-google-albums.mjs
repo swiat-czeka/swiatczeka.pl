@@ -38,6 +38,9 @@ for (const link of links) {
   // Pozycje albumu w kolejności. Filmy mają w metadanych klucz "76647426" (czas trwania); ich klatka ma ikonę odtwarzania.
   const matches = [...html.matchAll(/\["(AF1Qip[\w-]+)",\["(https:\/\/lh3\.googleusercontent\.com\/pw\/[\w-]+)",\d+,\d+/g)];
   const entries = [...new Map(matches.map((match, index) => [match[2], { id: match[1], url: match[2], video: html.slice(match.index, matches[index + 1]?.index ?? match.index + 4000).includes('"76647426"') }])).values()];
+  // Gdy w tytule nie ma daty: data najwcześniejszego z pierwszych zdjęć (znacznik czasu w metadanych pozycji).
+  const stamps = matches.slice(0, 40).map((match, index) => Number(html.slice(match.index, matches[index + 1]?.index ?? match.index + 4000).match(/\],(1\d{12}),"/)?.[1])).filter(Boolean);
+  const photoDate = stamps.length ? new Date(Math.min(...stamps)).toISOString() : undefined;
   const coverEntry = entries.find((entry) => entry.url === cover && !entry.video) ?? entries.find((entry) => !entry.video);
   const coverUrl = coverEntry?.url;
   const picked = entries.filter((entry) => entry.url !== coverUrl).slice(0, PHOTOS_PER_ALBUM);
@@ -59,7 +62,7 @@ for (const link of links) {
     media.push(entry.video ? { src, video: true, href: `https://photos.google.com/share/${albumId}/photo/${entry.id}?key=${shareKey}` } : { src });
   }
 
-  albums.push({ slug, title, date: parseDate(rest.join(' · ')) ?? new Date().toISOString(), cover: savedCover, photos: media.map((item) => item.src), media, google: link, source: 'google' });
+  albums.push({ slug, title, date: parseDate(rest.join(' · ')) ?? photoDate ?? new Date().toISOString(), cover: savedCover, photos: media.map((item) => item.src), media, google: link, source: 'google' });
   console.log(`${title}: okładka + ${media.length} pozycji (w tym ${media.filter((item) => item.video).length} filmów)`);
 }
 
