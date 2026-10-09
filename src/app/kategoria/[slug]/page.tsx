@@ -35,7 +35,7 @@ export default async function CategoryPage({ params }: Props) {
     <>
       <SiteHeader />
       <main className="category-page" id="top">
-        <Link className="back-link" href="/#kierunki"><ArrowLeft size={16} /> Wszystkie kierunki</Link>
+        <Link className="back-link" href="/mapa"><ArrowLeft size={16} /> Nasze podróże</Link>
         <p className="section-label">Historie z podróży</p><h1>{name}<em>.</em></h1><p className="category-intro">{posts.length} {posts.length === 1 ? 'opowieść' : 'opowieści'} z tego miejsca. Każda zaczyna się od drogi.</p>
         <ArchiveBrowser initialPosts={archive.posts} categories={categories} total={archive.total} initialCategory={slug} />
       </main>

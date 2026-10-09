@@ -1,74 +1,68 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
-import { ArchiveBrowser } from '@/components/archive-browser';
-import { SmartImage } from '@/components/smart-image';
-import { WorldMap } from '@/components/world-map';
-import { countryCategories } from '@/lib/countries';
-import { imageSources } from '@/lib/legacy';
+import { ArrowUpRight, Mail, Phone } from 'lucide-react';
+import { HomeSlider, type Slide } from '@/components/home-slider';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { getArchivePage, getCategoryCounts, getContinents, getPosts, getTotalCount } from '@/lib/posts';
+import { SocialLinks } from '@/components/social-links';
+import { imageSources, tidyExcerpt } from '@/lib/legacy';
+import { getPosts } from '@/lib/posts';
+import { contact } from '@/lib/site';
 
 export const revalidate = 60;
 
+const tiles = [
+  { href: '/mapa', title: 'Nasze podróże', text: 'Mapa świata i wszystkie historie z drogi.', image: '/albums/indonezja/cover.jpg' },
+  { href: '/podcasty', title: 'Podcasty', text: 'Rozmowy w radiu i z podróżnikami.', image: '/home/podcasty.jpg' },
+  { href: '/wideo', title: 'Wideo', text: 'Filmy z naszego kanału na YouTube.', image: '/albums/nepal-2022-helikopterem-nad-dolina-khumbu/cover.jpg' },
+];
+
 export default async function HomePage() {
-  const [posts, archive, continentList, categoryCounts, totalStories] = await Promise.all([
-    getPosts(),
-    getArchivePage('', '', 0, 12),
-    getContinents(),
-    getCategoryCounts(),
-    getTotalCount(),
-  ]);
-  const featured = posts.find((post) => post.image) ?? posts[0];
-  const featuredImage = featured ? imageSources(featured) : undefined;
-  const slugCounts = new Map([...categoryCounts].map(([slug, category]) => [slug, category.count]));
-  const countries = Object.values(countryCategories).filter((country) => (slugCounts.get(country.slug) ?? 0) > 0).length;
+  const latest = (await getPosts()).filter((post) => post.image).slice(0, 3);
+  const slides: Slide[] = latest.map((post) => ({
+    slug: post.slug,
+    title: post.title.replace(/\s*\.{2,}\s*$/, ''),
+    excerpt: tidyExcerpt(post.excerpt).slice(0, 190),
+    image: imageSources(post).src,
+    imageAlt: post.imageAlt,
+    label: post.categories.find((category) => category.slug !== 'dokad-teraz')?.name ?? 'Dziennik z drogi',
+    date: post.date,
+  }));
 
   return (
     <>
       <SiteHeader />
       <main id="top">
-        <section className="hero" aria-labelledby="hero-title">
-          {featuredImage?.src && <SmartImage className="hero-image" src={featuredImage.src} fallback={featuredImage.fallback} alt={featured.imageAlt || featured.title} fill priority quality={85} sizes="100vw" />}
-          <div className="hero-shade" />
-          <div className="hero-inner">
-            <div className="hero-kicker"><span className="kicker-dot" /> Dziennik podróży · od 2005</div>
-            <h1 id="hero-title">Nie odkładaj<br />świata <em>na później.</em></h1>
-            <p>Prawdziwe historie z drogi, spotkania i miejsca, do których chce się wracać.</p>
-            <a className="hero-link" href="#historie">Odkrywaj historie <ArrowDown size={16} /></a>
+        <h1 className="sr-only">Świat Czeka: dziennik podróży Anki i Krzyśka</h1>
+        <HomeSlider slides={slides} />
+
+        <section className="home-tiles" aria-label="Główne działy">
+          {tiles.map((tile) => (
+            <Link key={tile.href} className="home-tile" href={tile.href}>
+              <Image src={tile.image} alt="" fill sizes="(max-width: 900px) 92vw, 31vw" quality={80} />
+              <span className="tile-shade" />
+              <span className="tile-copy"><strong>{tile.title}</strong><span>{tile.text}</span><ArrowUpRight size={22} /></span>
+            </Link>
+          ))}
+        </section>
+
+        <section className="home-contact" aria-labelledby="contact-title">
+          <div className="home-contact-info">
+            <p className="section-label">Bądźmy w kontakcie</p>
+            <h2 id="contact-title">Znajdziesz nas <em>w drodze.</em></h2>
+            <SocialLinks className="home-social" labels />
+            <address>
+              <a href={`mailto:${contact.email}`}><Mail size={18} /> {contact.email}</a>
+              <a href={`tel:${contact.phone}`}><Phone size={18} /> {contact.phoneLabel}</a>
+            </address>
           </div>
-          {featured && <Link className="hero-caption" href={`/${featured.slug}`}><span>Najnowsza opowieść</span><strong>{featured.title}</strong><ArrowUpRight size={18} /></Link>}
-          <span className="hero-index">01 — {totalStories.toLocaleString('pl-PL')}</span>
+          <Link className="home-duo" href="/klub">
+            <span className="duo-photo"><Image src="/home/anka-krzysiek.jpg" alt="Anka i Krzysiek na szlaku Green Velo" fill sizes="(max-width: 900px) 92vw, 45vw" quality={80} /></span>
+            <span className="duo-copy"><strong>Anka i Krzysiek</strong><span>Rozbijamy stereotypy podróży i pokazujemy, że podróżowanie z Polski do egzotycznych miejsc jest bardziej dostępne, niż się wydaje.</span><span className="duo-link">Poznaj nas <ArrowUpRight size={16} /></span></span>
+          </Link>
         </section>
-
-        <section className="intro-band" id="kierunki">
-          <p className="section-label">Świat czeka</p>
-          <div className="intro-copy"><h2>Nie kolekcjonujemy<br /><em>miejsc. Zbieramy chwile.</em></h2><p>Zaczęło się od biletu w jedną stronę. Został dziennik pełen spotkań, smaków i dróg, którymi najchętniej pójdziemy jeszcze raz.</p></div>
-          <div className="place-list">{continentList.map((place) => <Link key={place.slug} href={`/kategoria/${place.slug}`}>{place.name}<span>{place.count}</span><ArrowUpRight size={15} /></Link>)}</div>
-        </section>
-
-        <section className="about-section" id="o-blogu" aria-labelledby="about-title">
-          <span className="section-label">O tym blogu</span>
-          <div>
-            <h2 id="about-title">Prywatny dziennik <em>z drogi.</em></h2>
-            <p>Świat czeka! Ty decydujesz! Rozbijamy stereotypy podróży i pokazujemy, że podróżowanie z Polski do egzotycznych miejsc jest bardziej dostępne, niż się wydaje. Od 2005 roku zapisujemy tu prawdziwe historie z drogi: {totalStories.toLocaleString('pl-PL')} opowieści z {countries} krajów.</p>
-            <p>Szukasz konkretnego kraju? Kliknij go na mapie poniżej albo przejrzyj archiwum. <Link className="text-link" href="/klub">Poznaj nas <span aria-hidden="true">↗</span></Link></p>
-          </div>
-        </section>
-
-        <section className="map-section" id="mapa" aria-labelledby="map-title">
-          <div className="section-heading"><div><span className="section-label">Zdrapka świata</span><h2 id="map-title">Gdzie już <em>byliśmy.</em></h2></div><Link className="text-link" href="/mapa">Otwórz mapę <span aria-hidden="true">↗</span></Link></div>
-          <WorldMap counts={slugCounts} />
-        </section>
-
-        <section className="stories-section" id="historie">
-          <div className="section-heading"><div><span className="section-label">Z drogi, z serca</span><h2>Historie, które <em>zostają.</em></h2></div><span className="archive-total">{totalStories.toLocaleString('pl-PL')} opowieści, {posts.length.toLocaleString('pl-PL')} już online</span></div>
-          <ArchiveBrowser initialPosts={archive.posts} categories={continentList} total={archive.total} />
-        </section>
-
-        <section className="closing-note"><Link className="closing-star" href="/studio" aria-label="Panel administratora">✳</Link><p>Najlepszy plan podróży?<br /><em>Ten, który jeszcze może się zmienić.</em></p><span className="closing-signature">Anka & przyjaciele</span></section>
       </main>
-      <SiteFooter />
+      <SiteFooter compact />
     </>
   );
 }

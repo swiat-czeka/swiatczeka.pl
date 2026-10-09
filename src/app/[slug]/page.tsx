@@ -100,7 +100,7 @@ export default async function StoryPage({ params }: Props) {
       <SiteHeader />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <main className="story-page" id="top">
-        <div className="story-topline"><Link href="/#historie"><ArrowLeft size={16} /> Wszystkie historie</Link>{post.categories[0] && <Link href={`/kategoria/${post.categories[0].slug}`}>{post.categories[0].name}</Link>}</div>
+        <div className="story-topline"><Link href="/mapa#historie"><ArrowLeft size={16} /> Wszystkie historie</Link>{post.categories[0] && <Link href={`/kategoria/${post.categories[0].slug}`}>{post.categories[0].name}</Link>}</div>
         <header className="story-header">
           <div className="story-meta"><span>{post.categories[0]?.name ?? 'Dziennik z drogi'}</span><span>·</span><time dateTime={post.date}>{formatDate(post.date)}</time></div>
           <h1>{post.title}</h1>

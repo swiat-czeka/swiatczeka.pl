@@ -864,3 +864,76 @@ body { transition: background-color .25s ease, color .25s ease; }
 @media (max-width: 620px) { .album-grid { grid-template-columns: 1fr; } .video-featured-row { padding: 16px; } }
 .photo-wall a { position: relative; }
 .photo-video-badge { position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; background: var(--deep); color: var(--on-deep); font-size: 12px; font-weight: 600; }
+
+/* --- Strona główna: slider, kafelki, kontakt --- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.home-slider { position: relative; height: min(78vh, 720px); min-height: 520px; overflow: hidden; background: #16222b; color: #fff; isolation: isolate; }
+.slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .8s ease, visibility .8s; }
+.slide.is-active { opacity: 1; visibility: visible; z-index: 1; }
+.slide-image { object-fit: cover; object-position: center 45%; }
+.slide-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10, 22, 30, .78) 0%, rgba(10, 22, 30, .45) 48%, rgba(10, 22, 30, .08) 100%), linear-gradient(0deg, rgba(10, 22, 30, .5), transparent 40%); }
+.slide-copy { position: absolute; left: 12.1%; right: 12.1%; bottom: 14%; max-width: 640px; }
+.slide-kicker { display: flex; align-items: center; gap: 9px; margin: 0 0 18px; color: rgba(255, 255, 255, .88); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+.slide-copy h2 { margin: 0; font-family: var(--font-display); font-size: clamp(2.2rem, 4.6vw + .4rem, 4.6rem); font-weight: 400; line-height: 1.05; text-wrap: balance; }
+.slide-excerpt { max-width: 52ch; margin: 18px 0 26px; font-size: clamp(1rem, .95rem + .3vw, 1.15rem); line-height: 1.65; color: rgba(255, 255, 255, .92); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.slider-controls { position: absolute; z-index: 3; left: 12.1%; bottom: 36px; display: flex; align-items: center; gap: 6px; }
+.slider-controls button { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, .5); background: rgba(10, 22, 30, .35); color: #fff; cursor: pointer; transition: background .2s, border-color .2s; }
+.slider-controls button:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.slider-dots { display: flex; align-items: center; gap: 4px; padding: 0 8px; }
+.slider-dots button { width: 30px; height: 44px; border: 0; background: transparent; position: relative; }
+.slider-dots button::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: rgba(255, 255, 255, .45); transform: translateY(-50%); transition: background .2s; }
+.slider-dots button.dot-active::after { background: var(--accent-soft); }
+.slider-dots button:hover { background: transparent; border-color: transparent; }
+.slider-pause { margin-left: 10px; }
+
+.home-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding: 56px 12.1% 20px; }
+.home-tile { position: relative; display: block; min-height: 280px; overflow: hidden; background: var(--deep); color: #fff; }
+.home-tile img { object-fit: cover; transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
+.home-tile:hover img { transform: scale(1.05); }
+.tile-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(10, 22, 30, .82) 0%, rgba(10, 22, 30, .15) 65%); }
+.tile-copy { position: absolute; left: 22px; right: 22px; bottom: 20px; display: grid; gap: 6px; }
+.tile-copy strong { font-family: var(--font-display); font-size: clamp(1.7rem, 1.2vw + 1.2rem, 2.3rem); font-weight: 400; line-height: 1.1; }
+.tile-copy > span { max-width: 28ch; color: rgba(255, 255, 255, .9); font-size: 15px; line-height: 1.5; }
+.tile-copy svg { position: absolute; right: 0; top: 0; color: var(--accent-soft); transition: transform .25s; }
+.home-tile:hover .tile-copy svg { transform: translate(3px, -3px); }
+
+.home-contact { display: grid; grid-template-columns: 1fr 1.25fr; gap: 40px; align-items: stretch; padding: 56px 12.1% 96px; }
+.home-contact-info h2 { margin: 12px 0 22px; font-family: var(--font-display); font-size: clamp(2rem, 2.4vw + 1rem, 3.2rem); font-weight: 400; line-height: 1.1; }
+.home-contact-info h2 em { color: var(--link); }
+.home-social { flex-direction: column; align-items: flex-start; gap: 4px; margin-bottom: 22px; }
+.home-social a { width: auto; min-height: 44px; padding: 0 16px 0 0; display: inline-flex; align-items: center; gap: 12px; font-size: 17px; font-weight: 600; }
+.home-social a svg { flex: none; }
+.home-contact address { display: grid; gap: 4px; font-style: normal; }
+.home-contact address a { min-height: 44px; display: inline-flex; align-items: center; gap: 12px; font-size: 17px; }
+.home-contact address a:hover, .home-social a:hover { color: var(--link); }
+.home-duo { display: grid; grid-template-columns: 1fr 1fr; background: var(--white); border: 1px solid var(--line); border-top: 3px solid var(--accent); overflow: hidden; transition: box-shadow .25s, transform .25s; }
+.home-duo:hover { box-shadow: 0 14px 40px #17232b1a; transform: translateY(-2px); }
+.duo-photo { position: relative; min-height: 260px; }
+.duo-photo img { object-fit: cover; object-position: center 35%; }
+.duo-copy { display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 28px; }
+.duo-copy strong { font-family: var(--font-display); font-size: 1.9rem; font-weight: 400; line-height: 1.1; }
+.duo-copy > span { color: var(--text-soft); font-size: 15px; line-height: 1.65; }
+.duo-copy .duo-link { display: inline-flex; align-items: center; gap: 6px; color: var(--link); font-weight: 700; }
+
+.travels-intro { max-width: 70ch; margin: 22px 0 8px; }
+.travels-intro p { margin: 0 0 12px; color: var(--text-soft); font-size: 1.08rem; line-height: 1.8; }
+.travels-map { margin-top: 36px; }
+.travels-map h2, .travels-blog h2 { margin: 0 0 18px; font-family: var(--font-display); font-size: clamp(1.9rem, 2.2vw + 1rem, 3rem); font-weight: 400; line-height: 1.1; }
+.travels-map h2 em, .travels-blog h2 em { color: var(--link); }
+.travels-blog { margin-top: 72px; padding-top: 48px; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+.admin-entry { opacity: .35; font-size: 14px; }
+.admin-entry:hover, .admin-entry:focus-visible { opacity: 1; }
+.map-page h1 { font-size: clamp(2.4rem, 6vw, 5rem); }
+
+@media (max-width: 900px) {
+  .home-slider { height: 74svh; min-height: 480px; }
+  .slide-copy { left: 6%; right: 6%; bottom: 22%; }
+  .slider-controls { left: 6%; bottom: 24px; }
+  .home-tiles { grid-template-columns: 1fr; padding: 32px 5% 12px; gap: 14px; }
+  .home-tile { min-height: 200px; }
+  .home-contact { grid-template-columns: 1fr; padding: 40px 5% 64px; gap: 28px; }
+  .home-duo { grid-template-columns: 1fr; }
+  .duo-photo { min-height: 240px; }
+}
+@media (prefers-reduced-motion: reduce) { .slide { transition: none; } .home-tile img { transition: none; } }
+@media (max-width: 620px) { .footer-bottom { flex-direction: column; gap: 10px; } }

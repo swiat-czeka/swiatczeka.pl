@@ -54,7 +54,7 @@ export async function PageView({ page }: { page: BlogPost }) {
             <Link className="landing-cta" href="/kategoria/dokad-teraz">Wszystkie wpisy z trasy <ArrowUpRight size={17} /></Link>
           </div>
         )}
-        {!html && <Link className="landing-cta" href="/#historie">Odkryj wszystkie historie <ArrowUpRight size={17} /></Link>}
+        {!html && <Link className="landing-cta" href="/mapa#historie">Odkryj wszystkie historie <ArrowUpRight size={17} /></Link>}
       </article>
     </main>
   );
