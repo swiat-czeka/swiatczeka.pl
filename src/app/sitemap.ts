@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: 'https://swiatczeka.pl/mapa', changeFrequency: 'weekly', priority: 0.8 },
     { url: 'https://swiatczeka.pl/wideo', changeFrequency: 'weekly', priority: 0.8 },
     { url: 'https://swiatczeka.pl/podcasty', changeFrequency: 'monthly', priority: 0.7 },
+    { url: 'https://swiatczeka.pl/zrownowazone-podroze', changeFrequency: 'monthly', priority: 0.7 },
     { url: 'https://swiatczeka.pl/fotki', changeFrequency: 'monthly', priority: 0.7 },
     ...getAlbums().filter((album) => album.photos.length).map((album) => ({ url: `https://swiatczeka.pl/fotki/${album.slug}`, lastModified: new Date(album.date), changeFrequency: 'yearly' as const, priority: 0.4 })),
     ...[...categories.keys()].map((slug) => ({ url: `https://swiatczeka.pl/kategoria/${slug}`, changeFrequency: 'weekly' as const, priority: 0.6 })),

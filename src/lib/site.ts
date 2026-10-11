@@ -5,6 +5,7 @@ export const nav = [
   { label: 'Wideo', href: '/wideo' },
   { label: 'Podcasty', href: '/podcasty' },
   { label: 'Fotki', href: '/fotki' },
+  { label: 'Zrównoważone podróże', href: '/zrownowazone-podroze' },
   { label: 'O nas', href: '/klub' },
 ];
 
