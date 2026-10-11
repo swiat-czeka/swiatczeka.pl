@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   try {
     await createAdminSession();
   } catch {
-    return NextResponse.json({ error: 'Brakuje konfiguracji w Vercel: dodaj zmienną SESSION_SECRET (Settings → Environment Variables, min. 32 znaki) i zrób Redeploy.' }, { status: 503 });
+    return NextResponse.json({ error: 'Brakuje poprawnego SESSION_SECRET w Vercel. To nie jest hasło do logowania, tylko długi losowy ciąg (min. 32 znaki, np. 40 losowych liter i cyfr). Ustaw go w Settings → Environment Variables i zrób Redeploy.' }, { status: 503 });
   }
   return NextResponse.json({ ok: true });
 }
