@@ -43,7 +43,9 @@ export async function isAdmin() {
 
 export function verifyCredentials(email: string, password: string) {
   const emailOk = safeEqual(email.trim().toLowerCase(), ADMIN_EMAIL);
-  const hash = scryptSync(password, ADMIN_SALT, ADMIN_HASH.length);
+  // Telefony i menedżery haseł lubią dokleić spację na końcu – tolerujemy ją.
+  const normalized = password.normalize('NFC').trim();
+  const hash = scryptSync(normalized, ADMIN_SALT, ADMIN_HASH.length);
   return timingSafeEqual(hash, ADMIN_HASH) && emailOk;
 }
 
