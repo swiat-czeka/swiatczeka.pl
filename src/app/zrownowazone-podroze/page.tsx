@@ -26,6 +26,8 @@ const photos = [
   { src: '/sustainable/pakowanie.jpg', alt: 'Rzeczy rozłożone przed spakowaniem plecaka', caption: 'Pakowanie: im mniej, tym lepiej' },
   { src: '/sustainable/riksze-indie.jpg', alt: 'Riksze na ulicy w Indiach', caption: 'Rikszą po Indiach: lokalny transport zamiast wynajętego auta' },
   { src: '/sustainable/skuter.jpg', alt: 'Skuter na wiejskiej drodze', caption: 'Skuterem, jak jeżdżą miejscowi' },
+  { src: '/sustainable/prom.jpg', alt: 'Wejście na pokład promu z plecakami', caption: 'Promem zamiast samolotem' },
+  { src: '/sustainable/woda-plaza.jpg', alt: 'Butelka wody i karta płatnicza na plaży', caption: 'Płacisz na miejscu? Wybieraj to, co zostaje lokalnie' },
   { src: '/sustainable/lodza-dingboche.jpg', alt: 'Lodża Khumbu Resort w Dingboche, Nepal', caption: 'Lokalna lodża w Dingboche w Nepalu' },
   { src: '/sustainable/chatki-plaza.jpg', alt: 'Anka przed chatkami z liści palmowych na plaży', caption: 'Chatki na plaży: nocleg w lokalnym stylu' },
   { src: '/sustainable/hamak-amazonka.jpg', alt: 'Anka w hamaku na pokładzie rzecznego statku', caption: 'Hamak na pokładzie: tak podróżuje się lokalnie po rzece' },
