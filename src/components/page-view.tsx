@@ -5,6 +5,7 @@ import { SmartImage } from '@/components/smart-image';
 import { SocialLinks } from '@/components/social-links';
 import { imageSources, rewriteLegacyHtml } from '@/lib/legacy';
 import { getArchivePage } from '@/lib/posts';
+import { achievements, wonders } from '@/lib/achievements';
 import { contact, people } from '@/lib/site';
 import type { BlogPost } from '@/lib/types';
 
@@ -37,6 +38,27 @@ export async function PageView({ page }: { page: BlogPost }) {
                 </article>
               ))}
             </div>
+          </section>
+        )}
+        {page.slug === 'klub' && (
+          <section className="wins" aria-labelledby="wins-title">
+            <h2 id="wins-title">Nasze małe sukcesy</h2>
+            <p className="wins-lead">Trasy, które przeszliśmy i przejechaliśmy, oraz cuda świata, które udało się zobaczyć.</p>
+            {[...achievements, ...wonders].map((group) => (
+              <div key={group.title} className="wins-group">
+                <h3>{group.title} <span>{group.summary}</span></h3>
+                <ul>
+                  {group.items.map((item) => (
+                    <li key={item.name}>
+                      <strong>{item.name}</strong>
+                      <span className="wins-meta">{item.when}{item.km ? ` · ${item.km} km` : ''}</span>
+                      {item.note && <span className="wins-note">{item.note}</span>}
+                      {item.href && <a className="text-link" href={item.href} target="_blank" rel="noopener noreferrer">{item.hrefLabel ?? 'Zdjęcia z trasy'} <ArrowUpRight size={14} /></a>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </section>
         )}
         {page.slug === 'klub' && (

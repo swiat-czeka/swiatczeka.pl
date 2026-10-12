@@ -984,3 +984,17 @@ body { transition: background-color .25s ease, color .25s ease; }
 }
 @media (max-width: 620px) { .mobile-menu.is-open { height: calc(100svh - 72px); } }
 @media (min-width: 1101px) and (max-width: 1260px) { .header-social { display: none; } }
+
+/* --- O nas: małe sukcesy --- */
+.wins { margin-top: 64px; font-family: var(--font-body); }
+.wins > h2 { margin: 0 0 8px; font-family: var(--font-display); font-size: 2rem; font-weight: 400; }
+.wins-lead { margin: 0 0 28px; color: var(--text-soft); }
+.wins-group { margin: 0 0 32px; }
+.wins-group h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 3px solid var(--accent); font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; }
+.wins-group h3 span { color: var(--link); font-family: var(--font-body); font-size: 15px; font-weight: 700; }
+.wins-group ul { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.wins-group li { display: grid; gap: 3px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.wins-group li strong { font-weight: 700; }
+.wins-meta { color: var(--muted); font-size: 14px; }
+.wins-note { color: var(--text-soft); font-size: 15px; line-height: 1.65; }
+.wins-group .text-link { justify-self: start; display: inline-flex; align-items: center; gap: 4px; color: var(--link); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }

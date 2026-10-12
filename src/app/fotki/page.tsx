@@ -21,7 +21,7 @@ export default function PhotosPage() {
       <SiteHeader />
       <main className="albums-page" id="top">
         <p className="section-label">Portfolio</p>
-        <h1>Fotki z <em>drogi.</em></h1>
+        <h1>Fotki z <em>podróży.</em></h1>
         <p className="category-intro">{albums.length} albumów ze zdjęciami z naszych wypraw. Przy części znajdziesz link do pełnego albumu w Google Photos.</p>
         <div className="album-grid">
           {albums.map((album, index) => {

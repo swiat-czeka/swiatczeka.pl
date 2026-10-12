@@ -12,17 +12,21 @@ export const metadata: Metadata = {
 };
 
 const principles = [
-  { title: 'Wolniej znaczy lepiej', text: 'Zamiast odhaczać miejsca, zostajemy w nich dłużej. Nieśpieszna podróż to mniej przesiadek, więcej rozmów z ludźmi i prawdziwy odpoczynek zamiast wyścigu z planem.' },
-  { title: 'Wybieraj wolniejszy transport', text: 'Rower, pociąg, własne nogi. Samolot tylko wtedy, gdy innej drogi po prostu nie ma. Trasy takie jak Green Velo czy Odra-Nysa pokazują, że do przygody nie trzeba się spieszyć.' },
-  { title: 'Pakuj mniej', text: 'Sakwy mają swoje granice i bardzo dobrze. Dwie koszulki wystarczą. Lżejszy bagaż to mniej paliwa, mniej stresu i więcej swobody po drodze.' },
-  { title: 'Jedz i nocuj lokalnie', text: 'Pieniądze zostają tam, gdzie je wydajesz: u rodzin, w małych barach i pensjonatach. Lokalne jedzenie to też najlepszy sposób, żeby poczuć klimat miejsca.' },
-  { title: 'Szanuj ludzi i ich zwyczaje', text: 'Zapytaj, zanim zrobisz zdjęcie. Naucz się kilku słów w lokalnym języku. Pamiętaj, że jesteś gościem i że to, co dla Ciebie jest egzotyką, dla innych jest codziennością.' },
-  { title: 'Zostaw miejsce lepsze, niż zastałeś', text: 'Własna butelka na wodę, mniej plastiku, śmieci zabieramy ze sobą. Trzymamy się szlaków, nie płoszymy zwierząt i szanujemy parki narodowe.' },
-  { title: 'Wracaj tam, gdzie Ci dobrze', text: 'Do części krajów wracaliśmy kilkakrotnie, jak do domu. Głębsza znajomość jednego miejsca daje więcej niż kolejna pieczątka w paszporcie.' },
-  { title: 'Zadbaj o równowagę i idee', text: 'Podróż nie jest ucieczką od życia, tylko jego częścią. Zostaw w planie luz i odpoczynek, a za wyprawą niech stoi jakaś idea: ciekawość, ruch, spotkania z ludźmi.' },
+  { title: 'Pakuj mniej', text: 'Każdy kilogram bagażu to większy ślad węglowy, zwłaszcza w samolocie. Weź własne mydło w kostce i butelkę z filtrem zamiast plastiku z hotelu. Sprawdź też krem do opalania: popularne filtry UV (oksybenzon, oktinostat) niszczą rafy koralowe, więc przed nurkowaniem wybieraj kremy przyjazne rafie.' },
+  { title: 'Wybieraj wolniejszy transport', text: 'Samolot to 2–3% światowej emisji CO₂ i zwykle nie ma dla niego zamiennika, ale na krótszych trasach lepszy jest pociąg lub rower. Sam lot Poznań–Cagliari i z powrotem to 272 kg CO₂ w klasie ekonomicznej, a w biznesowej dwa razy tyle. Na miejscu zamiast auta z wypożyczalni wybierz transport publiczny albo rower: taniej, lokalniej i często większa przygoda.' },
+  { title: 'Nocuj lokalnie', text: 'Mały pensjonat albo kwatera u gospodarzy zostawiają pieniądze na miejscu, a wielkie hotele dają mieszkańcom głównie niskopłatną pracę. W formule all-inclusive turyści prawie nie wychodzą z hotelu, więc lokalne bary i przewodnicy nie zarabiają nic. Szukaj miejsc, które dbają o środowisko, na przykład korzystają z energii słonecznej.' },
+  { title: 'Oszczędzaj wodę i energię', text: 'Jedna osoba w pięciogwiazdkowym hotelu zużywa nawet 522 litry wody dziennie. Nie każ prać codziennie ręczników, krócej korzystaj z prysznica, ogranicz klimatyzację i kosmetyki w jednorazowych opakowaniach. W wielu turystycznych miejscach brakuje wody, a pierwszeństwo mają hotele, nie mieszkańcy.' },
+  { title: 'Jedz lokalnie', text: 'Lokalne jedzenie to najlepszy sposób, żeby poznać miejsce, ludzi i ich kulturę. Podwójnie lokalnie: produkty z okolicy, bez kosztów transportu, i restauracje czy sklepiki prowadzone przez mieszkańców.' },
+  { title: 'Pamiętaj o sile swoich pieniędzy', text: 'Na Fidżi aż 60% pieniędzy wydawanych przez turystów nie zostaje na wyspie. Wspieraj lokalną gospodarkę: noclegi, transport, przewodników, targi. Najlepsze pamiątki nie pochodzą z fabryk w Chinach (chyba że akurat tam jesteś), tylko od lokalnych rzemieślników.' },
+  { title: 'Szanuj ludzi, zwierzęta i przyrodę', text: 'Przejażdżki na słoniach i delfinaria okupione są cierpieniem zwierząt. Jeśli chcesz zobaczyć zwierzęta, wybierz sprawdzone rezerwaty i sanktuaria. Pamiętaj też, że dla ludzi, których odwiedzasz, to codzienność, a nie egzotyka: pytaj, zanim zrobisz zdjęcie, zostaw miejsce lepsze, niż je zastałeś, i naucz się kilku słów w ich języku.' },
+  { title: 'Czasem zostań w domu', text: 'Staycation, czyli urlop z powrotem do własnego łóżka na noc: odkrywaj swoje miasto, nadrabiaj zaległości kulturalne, jedź na jednodniowe wycieczki rowerem. Oszczędza czas i pieniądze, jest dobry dla klimatu i też dostarcza wrażeń. A kiedy już ruszasz w świat, zwalniaj i wracaj tam, gdzie Ci dobrze: do części krajów wracamy jak do domu.' },
 ];
 
 const photos = [
+  { src: '/sustainable/hamak-amazonka.jpg', alt: 'Anka w hamaku na pokładzie rzecznego statku', caption: 'Hamak na pokładzie: tak podróżuje się lokalnie po rzece' },
+  { src: '/sustainable/chatka-filipiny.jpg', alt: 'Bambusowa chatka na Filipinach', caption: 'Bambusowa chatka: nocleg u lokalnych gospodarzy' },
+  { src: '/sustainable/autobus-puerto-sabang.jpg', alt: 'Lokalny autobus do Puerto Sabang', caption: 'Lokalnym autobusem do Puerto Sabang' },
+  { src: '/sustainable/namiot-gory.jpg', alt: 'Obóz z namiotem w górach', caption: 'Prosty obóz w górach: mało bagażu, dużo przyrody' },
   { src: '/albums/trasa-odra-nysa/cover.jpg', alt: 'Anka i Krzysiek na trasie Odra-Nysa', caption: 'Odra-Nysa: nieśpiesznie, na dwóch kółkach' },
   { src: '/albums/eurovelo-10-2021-rowerem-nad-baltykiem/cover.jpg', alt: 'Anka i Krzysiek na promie nad Bałtykiem', caption: 'EuroVelo 10: prom zamiast samochodu' },
   { src: '/albums/eurovelo-10-2021-rowerem-nad-baltykiem/01.jpg', alt: 'Rowery z sakwami na dworcu', caption: 'Pociąg, rower i sakwy' },
@@ -45,7 +49,7 @@ export default function SustainablePage() {
         </header>
 
         <section className="sustain-intro">
-          <p>Zrównoważona podróż to taka, po której nikt nie ma gorzej: ani miejsce, które odwiedzasz, ani ludzie, którzy w nim mieszkają, ani Ty sam. Nie chodzi o perfekcję. Chodzi o kilka dobrych nawyków, które z czasem stają się drugą naturą.</p>
+          <p>Zrównoważona podróż to taka, po której nikt nie ma gorzej: ani miejsce, które odwiedzasz, ani ludzie, którzy w nim mieszkają, ani Ty sam. Turystyka daje pracę setkom milionów ludzi, ale masowa i nieprzemyślana niszczy to, co chcemy zobaczyć: Wenecja, Barcelona czy Praga stały się ofiarami własnej popularności (overtourism). Nie chodzi o to, żeby przestać jeździć po świecie, tylko żeby pamiętać o śladach, które po sobie zostawiamy.</p>
           <p>Poniżej osiem zasad, które przyświecają naszym wyprawom, rowerowym, górskim i dalekim.</p>
         </section>
 

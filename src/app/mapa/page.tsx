@@ -23,7 +23,7 @@ export default async function TravelsPage() {
       <SiteHeader />
       <main className="map-page" id="top">
         <p className="section-label">Nasze podróże</p>
-        <h1>Prywatny dziennik <em>z drogi.</em></h1>
+        <h1>Prywatny dziennik <em>z podróży.</em></h1>
         <div className="travels-intro">
           <p>Świat czeka! Ty decydujesz! Rozbijamy stereotypy podróży i pokazujemy, że podróżowanie z Polski do egzotycznych miejsc jest bardziej dostępne, niż się wydaje. Od 2005 roku zapisujemy tu prawdziwe historie z drogi: {total.toLocaleString('pl-PL')} opowieści z {countries} krajów.</p>
           <p>Szukasz konkretnego kraju? Kliknij go na mapie albo przejrzyj wszystkie historie poniżej.</p>
