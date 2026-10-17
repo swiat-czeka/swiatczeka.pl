@@ -1,28 +1,28 @@
 // „Małe sukcesy” na stronie O nas: dane z tabelki podanej przez autorkę.
-export type Achievement = { title: string; summary: string; items: { name: string; when: string; km?: number; note?: string; href?: string; hrefLabel?: string }[] };
+export type Achievement = { title: string; summary: string; items: { image?: string; name: string; when: string; km?: number; note?: string; href?: string; hrefLabel?: string }[] };
 
 export const achievements: Achievement[] = [
   {
     title: 'Szlaki piesze',
     summary: '1254 km',
     items: [
-      { name: 'Szlak Orlich Gniazd', when: '10–16 sierpnia 2017', km: 163, note: 'Kilka dni przyjemnego spacerku po jurajskich zamkach.', href: 'https://photos.app.goo.gl/QwfQAuZ4QdC5dK9i6' },
-      { name: 'Te Araroa, Nowa Zelandia', when: 'grudzień 2017', km: 333, note: 'Małe, wyczerpujące fragmenty: to zaledwie 10% szlaku, ale i tak było ostro. O tym będzie w książce.' },
-      { name: 'Główny Szlak Beskidzki', when: '2018–2019', km: 504, note: 'Plan był taki, żeby przejść go jednym ciągiem, ale po drugim dniu w Bieszczadach „skasowałam sobie kolana” i zmieniliśmy plan. Raz w miesiącu robiliśmy kolejne etapy. Tak też się da.', href: 'https://photos.app.goo.gl/bHVAnTxn9DP1qX9g8' },
-      { name: 'Szlak Świętokrzyski', when: '21–24 maja 2020', km: 254, note: '254 km przygody.', href: 'https://photos.app.goo.gl/fqFXMP3jJAhwhJoZ9' },
+      { image: '/wins/orle-gniazda.jpg', name: 'Szlak Orlich Gniazd', when: '10–16 sierpnia 2017', km: 163, note: 'Kilka dni przyjemnego spacerku po jurajskich zamkach.', href: 'https://photos.app.goo.gl/QwfQAuZ4QdC5dK9i6' },
+      { image: '/wins/nowa-zelandia.jpg', name: 'Te Araroa, Nowa Zelandia', when: 'grudzień 2017', km: 333, note: 'Małe, wyczerpujące fragmenty: to zaledwie 10% szlaku, ale i tak było ostro. O tym będzie w książce.', href: 'https://photos.app.goo.gl/Tgv98McJz54pCXBCA' },
+      { image: '/wins/gsb.jpg', name: 'Główny Szlak Beskidzki', when: '2018–2019', km: 504, note: 'Plan był taki, żeby przejść go jednym ciągiem, ale po drugim dniu w Bieszczadach „skasowałam sobie kolana” i zmieniliśmy plan. Raz w miesiącu robiliśmy kolejne etapy. Tak też się da.', href: 'https://photos.app.goo.gl/bHVAnTxn9DP1qX9g8' },
+      { image: '/wins/swietokrzyski.jpg', name: 'Szlak Świętokrzyski', when: '21–24 maja 2020', km: 254, note: '254 km przygody.', href: 'https://photos.app.goo.gl/fqFXMP3jJAhwhJoZ9' },
     ],
   },
   {
     title: 'Szlaki rowerowe',
     summary: '4024 km',
     items: [
-      { name: 'EuroVelo 10 nad Bałtykiem', when: '6–14 sierpnia 2021', km: 430, note: 'Tłum w nadmorskich kurortach, a my między goframi i dmuchańcami przepychamy się rowerami ze Świnoujścia do Piasków.', href: 'https://photos.app.goo.gl/3ooByTJtAGtgsFdd9' },
-      { name: 'Velo Dunajec', when: '6–9 sierpnia 2022', km: 318, note: 'Z Katowic pociągiem do Tarnowa, potem dwa dni malowniczą trasą, która ciągle nam się gubiła (temat do powtórki). Z Zakopanego pociągiem do Bielska i stamtąd przypedałowaliśmy do Katowic wprost na moje urodziny.', href: 'https://photos.app.goo.gl/6vzoiNLeNT4i6YJX8' },
-      { name: 'Wielka Pętla Mazurska', when: '20–25 maja 2023', km: 292, note: 'Otwarcie sezonu i szybka jazda po niedokończonej trasie mazurskiej. Warto było, chociaż zachodni brzeg jezior dał nam nieźle popalić, bo nie było noclegu w komfortowym dla nas zasięgu.', href: 'https://photos.app.goo.gl/n61NHdbb9PzQekB2A' },
-      { name: 'Dolina Baryczy', when: '23–25 czerwca 2024', km: 170 },
-      { name: 'Katowice – Kaszuby', when: '23–30 kwietnia 2025', km: 550 },
-      { name: 'Green Velo', when: '22 lipca – 13 sierpnia 2025', km: 1555, note: 'Od Końskich do Malborka, nieśpiesznie, w 23 dni.', href: 'https://photos.app.goo.gl/2ECNtbUfjoh7pHK88' },
-      { name: 'Trasa Nysa – Odra', when: '2–10 sierpnia 2026', km: 709 },
+      { image: '/wins/eurovelo.jpg', name: 'EuroVelo 10 nad Bałtykiem', when: '6–14 sierpnia 2021', km: 430, note: 'Tłum w nadmorskich kurortach, a my między goframi i dmuchańcami przepychamy się rowerami ze Świnoujścia do Piasków.', href: 'https://photos.app.goo.gl/3ooByTJtAGtgsFdd9' },
+      { image: '/wins/velo-dunajec.jpg', name: 'Velo Dunajec', when: '6–9 sierpnia 2022', km: 318, note: 'Z Katowic pociągiem do Tarnowa, potem dwa dni malowniczą trasą, która ciągle nam się gubiła (temat do powtórki). Z Zakopanego pociągiem do Bielska i stamtąd przypedałowaliśmy do Katowic wprost na moje urodziny.', href: 'https://photos.app.goo.gl/6vzoiNLeNT4i6YJX8' },
+      { image: '/wins/mazury.jpg', name: 'Wielka Pętla Mazurska', when: '20–25 maja 2023', km: 292, note: 'Otwarcie sezonu i szybka jazda po niedokończonej trasie mazurskiej. Warto było, chociaż zachodni brzeg jezior dał nam nieźle popalić, bo nie było noclegu w komfortowym dla nas zasięgu.', href: 'https://photos.app.goo.gl/n61NHdbb9PzQekB2A' },
+      { image: '/wins/baryczy.jpg', name: 'Dolina Baryczy', when: '23–25 czerwca 2024', km: 170, href: 'https://photos.app.goo.gl/48ABYbkhpmFjKxGn8' },
+      { image: '/wins/kaszuby.jpg', name: 'Katowice – Kaszuby', when: '23–30 kwietnia 2025', km: 550, href: 'https://photos.app.goo.gl/SM73MuSciThKUHgw9' },
+      { image: '/wins/green-velo.jpg', name: 'Green Velo', when: '22 lipca – 13 sierpnia 2025', km: 1555, note: 'Od Końskich do Malborka, nieśpiesznie, w 23 dni.', href: 'https://photos.app.goo.gl/2ECNtbUfjoh7pHK88' },
+      { image: '/wins/nysa-odra.jpg', name: 'Trasa Nysa – Odra', when: '2–10 sierpnia 2026', km: 709, href: 'https://photos.app.goo.gl/oNBThQ2y7T4QEQhM8' },
     ],
   },
   {

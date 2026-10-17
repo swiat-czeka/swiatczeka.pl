@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight, Mail, Phone } from 'lucide-react';
 import { PostCard } from '@/components/post-card';
@@ -47,9 +48,14 @@ export async function PageView({ page }: { page: BlogPost }) {
             {[...achievements, ...wonders].map((group) => (
               <div key={group.title} className="wins-group">
                 <h3>{group.title} <span>{group.summary}</span></h3>
-                <ul>
+                <ul className="wins-grid">
                   {group.items.map((item) => (
                     <li key={item.name}>
+                      <div className={`wins-photo${item.image ? '' : ' wins-photo-logo'}`}>
+                        {item.image
+                          ? <Image src={item.image} alt={item.name} fill sizes="(max-width: 620px) 92vw, (max-width: 1000px) 46vw, 300px" quality={78} />
+                          : <Image src="/swiatczeka-logo.png" alt="Świat Czeka" width={220} height={110} sizes="160px" />}
+                      </div>
                       <strong>{item.name}</strong>
                       <span className="wins-meta">{item.when}{item.km ? ` · ${item.km} km` : ''}</span>
                       {item.note && <span className="wins-note">{item.note}</span>}

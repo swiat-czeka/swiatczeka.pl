@@ -998,3 +998,12 @@ body { transition: background-color .25s ease, color .25s ease; }
 .wins-meta { color: var(--muted); font-size: 14px; }
 .wins-note { color: var(--text-soft); font-size: 15px; line-height: 1.65; }
 .wins-group .text-link { justify-self: start; display: inline-flex; align-items: center; gap: 4px; color: var(--link); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+
+.wins-group ul.wins-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 20px; }
+.wins-grid li { align-content: start; padding: 0 0 14px; border-bottom: 0; }
+.wins-photo { position: relative; aspect-ratio: 3 / 2; overflow: hidden; margin-bottom: 8px; background: var(--paper-deep); }
+.wins-photo img { object-fit: cover; }
+.wins-photo-logo { display: grid; place-items: center; background: var(--sky); }
+.wins-photo-logo img { position: static; width: 55%; height: auto; object-fit: contain; }
+@media (max-width: 1000px) { .wins-group ul.wins-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .wins-group ul.wins-grid { grid-template-columns: 1fr; } }
