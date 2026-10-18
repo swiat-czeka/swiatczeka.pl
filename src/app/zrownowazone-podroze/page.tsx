@@ -23,8 +23,7 @@ const principles = [
 ];
 
 const photos = [
-  { src: '/sustainable/woda-plaza.jpg', alt: 'Butelka wody i karta płatnicza na plaży', caption: 'Płacisz na miejscu? Wybieraj to, co zostaje lokalnie' },
-  { src: '/sustainable/pakowanie.jpg', alt: 'Rzeczy rozłożone przed spakowaniem plecaka', caption: 'Pakowanie: im mniej, tym lepiej' },
+  { src: '/sustainable/woda-plaza.jpg', alt: 'Butelka wody i karta płatnicza na plaży', caption: 'Pakowanie: im mniej, tym lepiej' },
   { src: '/sustainable/riksze-indie.jpg', alt: 'Riksze na ulicy w Indiach', caption: 'Rikszą po Indiach: lokalny transport zamiast wynajętego auta' },
   { src: '/sustainable/skuter.jpg', alt: 'Skuter na wiejskiej drodze', caption: 'Skuterem, jak jeżdżą miejscowi' },
   { src: '/sustainable/prom.jpg', alt: 'Wejście na pokład promu z plecakami', caption: 'Promem zamiast samolotem' },
