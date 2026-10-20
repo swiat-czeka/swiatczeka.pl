@@ -4,7 +4,7 @@ import { ArrowUpRight, Mail, Phone } from 'lucide-react';
 import { PostCard } from '@/components/post-card';
 import { SmartImage } from '@/components/smart-image';
 import { SocialLinks } from '@/components/social-links';
-import { imageSources, rewriteLegacyHtml } from '@/lib/legacy';
+import { imageSources, mirrorUrl, rewriteLegacyHtml } from '@/lib/legacy';
 import { getArchivePage } from '@/lib/posts';
 import { achievements, wonders } from '@/lib/achievements';
 import { contact, people } from '@/lib/site';
@@ -33,7 +33,7 @@ export async function PageView({ page }: { page: BlogPost }) {
             <div className="people-grid">
               {people.map((person) => (
                 <article key={person.name} className="person-card">
-                  <div className="person-photo"><SmartImage src={person.photo} alt={`${person.name}, zdjęcie`} fill sizes="(max-width: 620px) 70vw, 220px" quality={80} /></div>
+                  <div className="person-photo"><SmartImage src={mirrorUrl(person.photo)} alt={`${person.name}, zdjęcie`} fill sizes="(max-width: 620px) 70vw, 220px" quality={80} /></div>
                   <h3>{person.name}</h3>
                   {person.text.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
                 </article>

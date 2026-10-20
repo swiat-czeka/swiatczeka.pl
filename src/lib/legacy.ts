@@ -1,4 +1,8 @@
+import mediaIndex from '@/data/media-index.json';
 import type { BlogPost } from '@/lib/types';
+
+const mirrored = mediaIndex as Record<string, string>;
+
 
 const MEDIA_HOST = 'https://czekaswiat.pl';
 
@@ -12,9 +16,24 @@ export function plainText(html: string) {
     .trim();
 }
 
-/** Stare adresy swiatczeka.pl/wp-content/... wskazują na nieistniejący już hosting; pliki leżą na czekaswiat.pl. */
+/** Nazwa zdjęcia bez przyrostków WordPressa (-300x200, -scaled, -optimized): tak samo jak w scripts/mirror-media.mjs. */
+function mediaKey(fileName: string) {
+  let name = decodeURIComponent(fileName).toLowerCase().replace(/\.[a-z0-9]+$/, '');
+  for (let i = 0; i < 4; i += 1) name = name.replace(/-(?:optimized|scaled|rotated|e\d{9,})$/, '').replace(/-\d{2,4}x\d{2,5}$/, '');
+  return name;
+}
+
+/** Zdjęcie ze starego serwera → własna kopia w public/blog (jeśli istnieje), dzięki czemu strona nie zależy od czekaswiat.pl. */
+export function mirrorUrl(url: string) {
+  const match = url.match(/^https?:\/\/(?:www\.)?(?:czekaswiat|swiatczeka)\.pl\/wp-content\/uploads\/(\d{4})\/(\d{2})\/([^?#/]+\.(?:jpe?g|png|gif|webp))(?:[?#].*)?$/i);
+  if (!match) return url;
+  const id = `${match[1]}/${match[2]}/${mediaKey(match[3])}`;
+  return mirrored[id] ? `/blog/${id}.${mirrored[id]}` : url;
+}
+
+/** Stare adresy swiatczeka.pl/wp-content/... wskazują na nieistniejący już hosting; pliki mają kopię w /blog albo leżą na czekaswiat.pl. */
 export function normalizeMediaHost(url: string) {
-  return url.replace(/^https?:\/\/(?:www\.)?swiatczeka\.pl\/wp-content\//i, `${MEDIA_HOST}/wp-content/`);
+  return mirrorUrl(url.replace(/^https?:\/\/(?:www\.)?swiatczeka\.pl\/wp-content\//i, `${MEDIA_HOST}/wp-content/`));
 }
 
 export function imageSources(post: Pick<BlogPost, 'image'>) {
@@ -51,11 +70,11 @@ export function rewriteLegacyHtml(html: string) {
     .replace(/<img\b([^>]*?)\bsrc="([^"]+)"([^>]*)>/gi, (_m, before: string, rawSrc: string, after: string) => {
       const src = normalizeMediaHost(rawSrc);
       const rest = `${before}${after}`.replace(/\s+(?:srcset|sizes|decoding|loading)="[^"]*"/gi, '').replace(/\s*\/\s*$/, '');
-      if (!src.startsWith(`${MEDIA_HOST}/wp-content/`)) return `<img${rest} src="${src}" loading="lazy" decoding="async">`;
+      if (!src.startsWith(`${MEDIA_HOST}/wp-content/`) && !src.startsWith('/blog/')) return `<img${rest} src="${src}" loading="lazy" decoding="async">`;
       const srcset = widths.map((w) => `${optimized(src, w)} ${w}w`).join(', ');
       return `<img${rest} src="${optimized(src, 1080)}" srcset="${srcset}" sizes="(max-width: 900px) 92vw, 780px" loading="lazy" decoding="async">`;
     })
-    .replace(/<a\b([^>]*?)\bhref="(https?:\/\/(?:www\.)?swiatczeka\.pl\/wp-content\/[^"]+)"/gi, (_m, before: string, href: string) => `<a${before} href="${normalizeMediaHost(href)}"`)
+    .replace(/<a\b([^>]*?)\bhref="(https?:\/\/(?:www\.)?(?:swiatczeka|czekaswiat)\.pl\/wp-content\/[^"]+)"/gi, (_m, before: string, href: string) => `<a${before} href="${normalizeMediaHost(href)}"`)
     .replace(/<iframe\b([^>]*?)\bsrc="https?:\/\/www\.youtube\.com\/embed\//gi, '<iframe$1 src="https://www.youtube-nocookie.com/embed/')
     .replace(/<iframe\b/gi, '<iframe loading="lazy"')
     .replace(/<a\b(?![^>]*\btarget=)([^>]*?)\bhref="(https?:\/\/(?!(?:www\.)?(?:czekaswiat|swiatczeka)\.pl)[^"]+)"/gi, '<a$1 href="$2" target="_blank"');
