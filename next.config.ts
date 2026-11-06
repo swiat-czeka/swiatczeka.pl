@@ -3,6 +3,8 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
+    // Optymalizator Vercela ma limit 5000 przekształceń na darmowym planie. Zdjęcia są już pomniejszone (public/blog), więc podajemy je bez przetwarzania.
+    unoptimized: true,
     remotePatterns: [
       { protocol: 'https', hostname: 'czekaswiat.pl', pathname: '/**' },
       { protocol: 'https', hostname: 'i.ytimg.com', pathname: '/vi/**' },

@@ -64,15 +64,11 @@ export function metaTitle(post: BlogPost) {
 
 /** Stara treść HTML: poprawia host mediów, leniwe ładowanie i prywatniejsze osadzanie YouTube. */
 export function rewriteLegacyHtml(html: string) {
-  const widths = [640, 828, 1080, 1200]; // muszą należeć do images.deviceSizes w Next
-  const optimized = (src: string, width: number) => `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=80`;
   return html
     .replace(/<img\b([^>]*?)\bsrc="([^"]+)"([^>]*)>/gi, (_m, before: string, rawSrc: string, after: string) => {
       const src = normalizeMediaHost(rawSrc);
       const rest = `${before}${after}`.replace(/\s+(?:srcset|sizes|decoding|loading)="[^"]*"/gi, '').replace(/\s*\/\s*$/, '');
-      if (!src.startsWith(`${MEDIA_HOST}/wp-content/`) && !src.startsWith('/blog/')) return `<img${rest} src="${src}" loading="lazy" decoding="async">`;
-      const srcset = widths.map((w) => `${optimized(src, w)} ${w}w`).join(', ');
-      return `<img${rest} src="${optimized(src, 1080)}" srcset="${srcset}" sizes="(max-width: 900px) 92vw, 780px" loading="lazy" decoding="async">`;
+      return `<img${rest} src="${src}" loading="lazy" decoding="async">`;
     })
     .replace(/<a\b([^>]*?)\bhref="(https?:\/\/(?:www\.)?(?:swiatczeka|czekaswiat)\.pl\/wp-content\/[^"]+)"/gi, (_m, before: string, href: string) => `<a${before} href="${normalizeMediaHost(href)}"`)
     .replace(/<iframe\b([^>]*?)\bsrc="https?:\/\/www\.youtube\.com\/embed\//gi, '<iframe$1 src="https://www.youtube-nocookie.com/embed/')
